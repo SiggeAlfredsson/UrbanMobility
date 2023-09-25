@@ -53,6 +53,11 @@ public class UserController {
     @PutMapping("/update/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") long userId,@RequestBody User updatedUser) {
         //Add ADMIN check or token auth?
+
+        if(!userService.existsById(userId)){
+            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
+        }
+
         userService.updateUserById(userId,updatedUser);
         return ResponseEntity.ok().body(updatedUser);
 

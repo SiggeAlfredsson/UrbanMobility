@@ -13,13 +13,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 //@SpringBootTest
@@ -36,7 +37,7 @@ class UserServiceTest {
 
 
     @Test
-    void createUserReturnsUserInfo() {
+    void saveUserReturnsUserInfo() {
 
         User user = User.builder()
                 .username("fakeuser")
@@ -57,7 +58,7 @@ class UserServiceTest {
     void existsByUsernameReturnsTrueIfUsernameExists() {
         String username = "testUsername";
 
-        Mockito.when(userRepository.existsByUsername("testUsername")).thenReturn(true);
+        Mockito.when(userRepository.existsByUsername(username)).thenReturn(true);
 
         boolean result = userRepository.existsByUsername(username);
 
@@ -65,6 +66,16 @@ class UserServiceTest {
     }
 
 
+    @Test
+    void existsByIdReturnsTrueIfUserExists() {
+        Long userId = 1L;
+
+        Mockito.when(userRepository.existsById(userId)).thenReturn(true);
+
+        boolean result = userRepository.existsById(userId);
+
+        assertTrue(result);
+    }
 
     @Test
     void getAllUsersReturnsUsers() throws Exception {
@@ -94,22 +105,27 @@ class UserServiceTest {
         assertEquals(user2.getUsername(), savedUsers.get(1).getUsername());
 
 
-
-
-    }
-
-
-
-    @Test
-    void updateUser() {
     }
 
     @Test
     void deleteUserById() {
+
+
     }
 
     @Test
     void findById() {
+
+        User user = User.builder()
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+
+
+
     }
 
     @Test

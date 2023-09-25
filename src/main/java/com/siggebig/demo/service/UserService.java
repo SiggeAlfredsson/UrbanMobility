@@ -24,12 +24,12 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
-    public List<User> getAllUsers(){
-        return userRepository.findAll();
+    public boolean existsById(long id) {
+        return userRepository.existsById(id);
     }
 
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    public List<User> getAllUsers(){
+        return userRepository.findAll();
     }
 
     public void deleteUserById(long userId) {

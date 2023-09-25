@@ -38,13 +38,40 @@ public class UserService {
 
     public Optional<User> findById(long userId) { return userRepository.findById(userId); }
 
-    public User updateUserById(long userId, User user) {
+    public User updateUserById(long userId, User newInfo) {
         if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("Entity with id"+userId+"does not exist in db");
+            throw new EntityNotFoundException("User with id"+userId+"does not exist in db");
         }
-        user.setId(userId);
 
-        return userRepository.save(user);
+        User orgUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id"+userId+"does not exist in db"));
+
+        if (newInfo.getUsername()==null){
+            newInfo.setUsername(orgUser.getUsername());
+        }
+
+        if (newInfo.getPassword()==null){
+            newInfo.setPassword(orgUser.getPassword());
+        }
+
+        if (newInfo.getEmail()==null){
+            newInfo.setEmail(orgUser.getEmail());
+        }
+
+        if (newInfo.getPhoneNumber()==null){
+            newInfo.setPhoneNumber(orgUser.getPhoneNumber());
+        }
+
+        if (newInfo.getPaymentMethod()==null){
+            newInfo.setPaymentMethod(orgUser.getPaymentMethod());
+        }
+
+        newInfo.setId(orgUser.getId());
+        newInfo.setRole(orgUser.getRole());
+        newInfo.setBookings(orgUser.getBookings());
+
+
+
+        return userRepository.save(newInfo);
     }
 
 }

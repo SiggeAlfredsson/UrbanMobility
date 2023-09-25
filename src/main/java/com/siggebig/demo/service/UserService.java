@@ -1,5 +1,6 @@
 package com.siggebig.demo.service;
 
+import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class UserService {
 
     public User updateUserById(long userId, User user) {
         if (!userRepository.existsById(userId)) {
-//            throw error
+            throw new EntityNotFoundException("Entity with id"+userId+"does not exist in db");
         }
         user.setId(userId);
 

@@ -62,7 +62,7 @@ class UserControllerTest {
         List<User> users = new ArrayList<>();
 
         User user = User.builder()
-                .username("fakeuser")
+                .username("user1")
                 .password("password")
                 .email("fake@mail.com")
                 .build();
@@ -82,7 +82,8 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(users.size()))
-                .andExpect(jsonPath("$[0].username").value("user1"));
+                .andExpect(jsonPath("$[0].username").value("user1"))
+                .andExpect(jsonPath("$[1].username").value("fakeuser"));
 
 
     }

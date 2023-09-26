@@ -116,13 +116,25 @@ class UserServiceTest {
     @Test
     void findById() {
 
-        User user = User.builder()
+        Long userId = 1L;
+
+        User userForMock = User.builder()
+                .id(userId)
                 .username("fakeuser")
                 .password("password")
                 .email("fake@mail.com")
                 .build();
 
-        Mockito.when(userRepository.findById(1L)).thenReturn(Optional.ofNullable(user));
+        doReturn(Optional.of(userForMock)).when(userRepository).findById(userId);
+
+        Optional<User> userFromService = userService.findById(userId);
+
+        assertNotNull(userFromService, "User not found with id " + userId);
+        assertEquals(userId, userFromService.get().getId());
+        assertEquals(userForMock.getUsername(), userFromService.get().getUsername());
+
+// Could do for each column if wanted to
+
 
 
 
@@ -130,5 +142,35 @@ class UserServiceTest {
 
     @Test
     void updateUserById() {
+
+        Long userId = 1L;
+
+        User userOldInfo = User.builder()
+                .id(userId)
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+
+        User userNewInfo = User.builder()
+                .username("newusername")
+                .build();
+
+
+//        userId is stubbing mismatch? but 1L works
+        when(userRepository.existsById(1L)).thenReturn(true);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
+        when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
+
+        User updatedUser = userService.updateUserById(userId, userNewInfo);
+
+        assertEquals(userOldInfo.getId(), updatedUser.getId());
+        assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
+        assertEquals("newusername",updatedUser.getUsername());
+
+
+
     }
 }

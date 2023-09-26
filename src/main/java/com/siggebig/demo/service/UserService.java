@@ -45,6 +45,8 @@ public class UserService {
 
         User orgUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id"+userId+"does not exist in db"));
 
+//        Add checks so username and email is free
+
         if (newInfo.getUsername()==null){
             newInfo.setUsername(orgUser.getUsername());
         }

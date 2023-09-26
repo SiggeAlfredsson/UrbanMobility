@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-//@SpringBootTest
+@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 

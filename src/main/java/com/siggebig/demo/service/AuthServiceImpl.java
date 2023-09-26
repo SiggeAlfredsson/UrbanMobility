@@ -29,13 +29,13 @@ public class AuthServiceImpl implements AuthService{
     }
 
 
-    @Override
-    public User findUser(LoginDto loginDto) {
-
-        if(authenticate(loginDto)) {
-            return userRepository.findByUsername(loginDto.getUsername());
-        } else {
-            return null;
-        }
-    }
+//    @Override   Is this needed?
+//    public User findUser(LoginDto loginDto) {
+//
+//        if(authenticate(loginDto)) {
+//            return userRepository.findByUsername(loginDto.getUsername());
+//        } else {
+//            return null;
+//        }
+//    }
 }

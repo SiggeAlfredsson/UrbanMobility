@@ -9,6 +9,6 @@ public interface AuthService {
 
     boolean authenticate(LoginDto loginDto);
 
-    User findUser(LoginDto loginDto);
+//    User findUser(LoginDto loginDto);
 
 }

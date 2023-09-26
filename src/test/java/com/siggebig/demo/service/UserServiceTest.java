@@ -1,5 +1,6 @@
 package com.siggebig.demo.service;
 
+import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -34,6 +36,25 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    void throwsEntityNotFoundWhenUserNotExist() {
+        long userId = 3L;
+        User newInfo = new User();
+
+        Mockito.when(userRepository.existsById(3L)).thenReturn(false);
+
+
+        // Act and Assert
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.updateUserById(userId, newInfo);
+        });
+    }
 
 
     @Test
@@ -109,6 +130,16 @@ class UserServiceTest {
 
     @Test
     void deleteUserById() {
+        long userId = 1L;
+
+
+        // Act
+        userService.deleteUserById(userId);
+
+        // Assert
+        verify(userRepository, times(1)).deleteById(userId);
+
+
 
 
     }
@@ -141,7 +172,7 @@ class UserServiceTest {
     }
 
     @Test
-    void updateUserById() {
+    void updateUserByIdWorks() {
 
         Long userId = 1L;
 
@@ -172,7 +203,37 @@ class UserServiceTest {
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
         assertEquals("newusername",updatedUser.getUsername());
 
+    }
+// IDK bout these
+    @Test
+    void updateUserByIdWhenUsernameIsNull() {
+
+        Long userId = 1L;
+
+        User userOldInfo = User.builder()
+                .id(userId)
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+
+        User userNewInfo1 = User.builder()
+                .password("newpassword")
+                .build();
+
+        when(userRepository.existsById(1L)).thenReturn(true);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
+        when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
+
+        User updatedUser = userService.updateUserById(userId, userNewInfo1);
+
+        assertEquals(userOldInfo.getId(), updatedUser.getId());
+        assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
+        assertEquals("newpassword",updatedUser.getPassword());
 
 
     }
+
 }

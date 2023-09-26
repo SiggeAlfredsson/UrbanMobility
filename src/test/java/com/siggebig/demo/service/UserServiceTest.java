@@ -60,7 +60,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.existsByUsername(username)).thenReturn(true);
 
-        boolean result = userRepository.existsByUsername(username);
+        boolean result = userService.existsByUsername(username);
 
         assertTrue(result);
     }
@@ -68,11 +68,11 @@ class UserServiceTest {
 
     @Test
     void existsByIdReturnsTrueIfUserExists() {
-        Long userId = 1L;
 
-        Mockito.when(userRepository.existsById(userId)).thenReturn(true);
 
-        boolean result = userRepository.existsById(userId);
+        Mockito.when(userRepository.existsById(1L)).thenReturn(true);
+
+        boolean result = userService.existsById(1L);
 
         assertTrue(result);
     }
@@ -153,18 +153,20 @@ class UserServiceTest {
                 .build();
 
 
-        User userNewInfo = User.builder()
+        User userNewInfo1 = User.builder()
                 .username("newusername")
                 .build();
+
+
 
 
 //        userId is stubbing mismatch? but 1L works
         when(userRepository.existsById(1L)).thenReturn(true);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
-        when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
+        when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
 
-        User updatedUser = userService.updateUserById(userId, userNewInfo);
+        User updatedUser = userService.updateUserById(userId, userNewInfo1);
 
         assertEquals(userOldInfo.getId(), updatedUser.getId());
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());

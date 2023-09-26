@@ -23,7 +23,7 @@ class JwtServiceTest {
     JwtService jwtService;
 
     @Test
-    void getToken() {
+    void getTokenReturnsTokenIfAuthIsTrue() {
         var auth = LoginDto.builder()
                 .username("sean")
                 .password("123").build();
@@ -37,4 +37,20 @@ class JwtServiceTest {
 
         assertNotNull(token);
     }
+
+    @Test
+    void getTokenReturnsNullOfAuthIsFalse() {
+        var auth = LoginDto.builder()
+                .username("sean")
+                .password("123").build();
+
+        when(authService.authenticate(auth))
+                .thenReturn(false);
+
+        var token = jwtService.getToken(auth);
+
+        assertNull(token);
+
+    }
+
 }

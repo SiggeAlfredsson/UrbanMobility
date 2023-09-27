@@ -47,7 +47,7 @@ class UserControllerTest {
 
 //    Unit test ?
     @Test
-    void getAllUsersAlwaysReturnsOK() throws Exception {
+    void getAllUsersReturnsOK() throws Exception {
 
 
         mockMvc.perform(get("/user")
@@ -55,6 +55,8 @@ class UserControllerTest {
                 .andExpect(status().is2xxSuccessful());
 
     }
+
+
 
 
     @Test

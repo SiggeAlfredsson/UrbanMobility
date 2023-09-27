@@ -125,7 +125,7 @@ public class UserRepositoryTests {
 
 
     @Test
-    void getAllUsersReturnsUsers() {
+    void saveUserWorksAndGetAllUsersReturnsUsers() {
         User user = User.builder()
                 .username("fakeuser")
                 .password("password")

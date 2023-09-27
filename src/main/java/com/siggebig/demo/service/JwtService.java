@@ -25,4 +25,9 @@ public class JwtService {
         }
     }
 
+    public boolean authenticateToken(String token) {
+
+        return true;
+    }
+
 }

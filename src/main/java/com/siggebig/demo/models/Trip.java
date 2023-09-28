@@ -5,6 +5,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
+
+// a trip is something a supplier can make, like västtrafik can add a buss ride
+
 @Getter
 @Setter
 @Entity
@@ -26,8 +31,8 @@ public class Trip {
     private String departureTime;
     private String arrivalTime;
 
-    // is dis right?
-    @OneToOne(mappedBy = "trip_id")
-    private Booking booking;
+    // one trip can have many bookings, this makes it easy to add available slots left too.
+    @OneToMany(mappedBy = "trip_id")
+    private List<Booking> bookings;
 
 }

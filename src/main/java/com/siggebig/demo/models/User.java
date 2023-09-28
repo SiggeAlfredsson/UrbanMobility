@@ -10,7 +10,7 @@ import lombok.*;
 
 import java.util.List;
 
-
+ // a user can be both a user and a supplier, depends on the ROLE
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -41,7 +41,8 @@ public class User {
     private String role;
 
 
-//    private List<Payment> payments;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

@@ -40,6 +40,10 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
+    public void deleteAccountWithTokenAndUsername(String token, String username) {
+
+    }
+
     public Optional<User> findById(long userId) { return userRepository.findById(userId); }
 
 
@@ -52,15 +56,12 @@ public class UserService {
 
 
 
-        if(!jwtService.authenticateToken("mocktoken")){
-            throw new AuthenticationFailedException("Authentication Failed");
-        }
-
-
         // this exception is never called just so it is not an optional
         User orgUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id"+userId+"does not exist in db"));
 
-
+        if(!jwtService.authenticateToken("token", orgUser.getUsername())){
+            throw new AuthenticationFailedException("Authentication Failed");
+        }
 
 
         if (newInfo.getUsername()==null){

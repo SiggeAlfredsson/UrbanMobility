@@ -85,7 +85,7 @@ class UserServiceTest {
 
 
         // mocks that auth is valid
-        when(jwtService.authenticateToken("mocktoken")).thenReturn(true);
+        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(true);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
         when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
@@ -117,7 +117,7 @@ class UserServiceTest {
 
         when(userRepository.existsById(1L)).thenReturn(true);
 
-        when(jwtService.authenticateToken("mocktoken")).thenReturn(true);
+        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(true);
 
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
@@ -134,18 +134,29 @@ class UserServiceTest {
 
     @Test
     void updateUserByIdThrowsAuthFailedExcWhenAuthIsFalse() {
+
+        Long userId = 1L;
+
+        User userOldInfo = User.builder()
+                .id(userId)
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
         User newInfo = User.builder()
                 .username("username")
                 .password("newpassword")
                 .build();
 
-        when(userRepository.existsById(3L)).thenReturn(true);
+        when(userRepository.existsById(1L)).thenReturn(true);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
 
-        when(jwtService.authenticateToken("mocktoken")).thenReturn(false);
+        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(false);
 
 
         assertThrows(AuthenticationFailedException.class, () -> {
-            userService.updateUserById(3L, newInfo);
+            userService.updateUserById(1L, newInfo);
         });
     }
 

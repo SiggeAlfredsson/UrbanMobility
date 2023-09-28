@@ -25,9 +25,16 @@ public class JwtService {
         }
     }
 
-    public boolean authenticateToken(String token) {
+    public boolean authenticateToken(String token, String username) {
 
-        return true;
+        String decodedTokenUsername = "notImplemented";
+
+        if(decodedTokenUsername.equals(username)){
+            return true;
+        } else {
+            return false;
+        }
+
     }
 
 }

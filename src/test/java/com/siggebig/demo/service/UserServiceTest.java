@@ -1,5 +1,6 @@
 package com.siggebig.demo.service;
 
+import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.UserRepository;
@@ -36,6 +37,9 @@ class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private JwtService jwtService;
 
 
     @Test
@@ -79,6 +83,10 @@ class UserServiceTest {
 //        userId is stubbing mismatch? but 1L works
         when(userRepository.existsById(1L)).thenReturn(true);
 
+
+        // mocks that auth is valid
+        when(jwtService.authenticateToken("mocktoken")).thenReturn(true);
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
         when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
 
@@ -103,22 +111,42 @@ class UserServiceTest {
                 .build();
 
 
-        User userNewInfo1 = User.builder()
+        User userNewInfo = User.builder()
                 .password("newpassword")
                 .build();
 
         when(userRepository.existsById(1L)).thenReturn(true);
 
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
-        when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
+        when(jwtService.authenticateToken("mocktoken")).thenReturn(true);
 
-        User updatedUser = userService.updateUserById(userId, userNewInfo1);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
+        when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
+
+        User updatedUser = userService.updateUserById(userId, userNewInfo);
 
         assertEquals(userOldInfo.getId(), updatedUser.getId());
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
         assertEquals("newpassword",updatedUser.getPassword());
 
 
+    }
+
+    @Test
+    void updateUserByIdThrowsAuthFailedExcWhenAuthIsFalse() {
+        User newInfo = User.builder()
+                .username("username")
+                .password("newpassword")
+                .build();
+
+        when(userRepository.existsById(3L)).thenReturn(true);
+
+        when(jwtService.authenticateToken("mocktoken")).thenReturn(false);
+
+
+        assertThrows(AuthenticationFailedException.class, () -> {
+            userService.updateUserById(3L, newInfo);
+        });
     }
 
 }

@@ -36,7 +36,8 @@ public class User {
     private String email;
 
     private String phoneNumber;
-    private String paymentMethod; // ??
+    private String paymentMethod; // ?? swish
+    private int paymentNumber; // swish number
     private String role;
 
 
@@ -44,7 +45,6 @@ public class User {
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("user")
     private List<Booking> bookings;
 
 }

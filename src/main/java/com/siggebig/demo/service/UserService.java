@@ -85,7 +85,10 @@ public class UserService {
         }
 
         newInfo.setId(orgUser.getId());
+
+        //cant change role
         newInfo.setRole(orgUser.getRole());
+
         newInfo.setBookings(orgUser.getBookings());
 
 

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+// A user can make a booking, to go from A - B , but only a supplier should be able to add a trip
+
 @Getter
 @Setter
 @Entity
@@ -15,20 +17,22 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String departure;
-    private String arrival;
-    private String transportType; // ex train or bus
-    private String price;
-    private String travelCompany;
-    private int discount; // 0-100; in %
 
-    // Estimated / planned times
-    private String departureTime;
-    private String arrivalTime;
 
+    // the user need to make one payment when booking a trip
+    @OneToOne
+    @JoinColumn(name = "payment_id")
+    private Payment payment;
+
+    // the booking must have one user, but the user can have many bookings
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    // the booking must have a trip, what else are you paying for?? each booking is individual so 1to1
+    @OneToOne
+    @JoinColumn(name = "trip_id")
+    private Trip trip;
 
 
 }

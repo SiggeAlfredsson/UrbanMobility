@@ -4,8 +4,13 @@ package com.siggebig.demo.models;
 
 
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.Date;
+
+// to save all payments in db, a payment is linked to a booking
 
 @Getter
 @Setter
@@ -16,5 +21,11 @@ public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    private int amount;
+    private Date date;
+
+    @OneToOne(mappedBy = "payment")
+    private Booking booking;
 
 }

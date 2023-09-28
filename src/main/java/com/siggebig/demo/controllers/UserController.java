@@ -1,8 +1,12 @@
 package com.siggebig.demo.controllers;
 
+import com.siggebig.demo.Exception.AuthenticationFailedException;
+import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,23 +48,44 @@ public class UserController {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable("id") long userId) {
-        //Add ADMIN check or token auth?
-        userService.deleteUserById(userId);
+    public ResponseEntity<String> deleteUserWithId(@PathVariable("id") long userId, @RequestHeader("JWTToken") String token) {
+        try {
+            userService.deleteUserByIdAndToken(userId, token);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Auth failed");
+        }
+
         return ResponseEntity.ok("User deleted successfully");
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") long userId,@RequestBody User updatedUser) {
-        //Add ADMIN check or token auth?
-
-        if(!userService.existsById(userId)){
-            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteUserWithToken(@RequestHeader("JWTToken") String token) {
+        try {
+            userService.deleteUserWithToken(token);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Auth failed");
         }
 
-        userService.updateUserById(userId,updatedUser);
+
+        return ResponseEntity.ok("User deleted successfully");
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<User> updateUserWithToken(@RequestBody User updatedUser, @RequestHeader("JWTToken") String token) {
+
+//        if(!userService.existsById(userId)){
+//            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
+//        }
+
+        userService.updateUserWithToken(updatedUser, token);
         return ResponseEntity.ok().body(updatedUser);
 
     }
+
+
 
 }

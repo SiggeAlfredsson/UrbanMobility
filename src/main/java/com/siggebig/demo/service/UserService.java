@@ -28,6 +28,8 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+
+
     public boolean existsById(long id) {
         return userRepository.existsById(id);
     }
@@ -36,11 +38,33 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void deleteUserById(long userId) {
-        userRepository.deleteById(userId);
+
+    // only admins can delete users by id and token
+    public void deleteUserByIdAndToken(long userId, String token) {
+
+        String username = jwtService.getUsernameFromToken(token);
+        User user = userRepository.findByUsername(username);
+
+        if(user==null || username==null){
+            throw new EntityNotFoundException("No user found in token");
+        }
+
+        if(user.getRole().equals("ADMIN")){
+            userRepository.deleteById(userId);
+        } else {
+            throw new AuthenticationFailedException("Only admins can delete users");
+        }
     }
 
-    public void deleteAccountWithTokenAndUsername(String token, String username) {
+    public void deleteUserWithToken(String token) {
+
+        String username = jwtService.getUsernameFromToken(token);
+        if(username==null) {
+            throw new EntityNotFoundException("no user found");
+        } else {
+            User user = userRepository.findByUsername(username);
+            userRepository.deleteById(user.getId());
+        }
 
     }
 
@@ -48,54 +72,54 @@ public class UserService {
 
 
 
-    // should it be User oldInfo and do getId from that instead of passing in a id in the URL?
-    public User updateUserById(long userId, User newInfo) {
-        if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User with id"+userId+"does not exist in db");
+    public User updateUserWithToken(User newInfo, String token) {
+
+        String username = jwtService.getUsernameFromToken(token);
+
+
+        if(username==null) {
+            throw new EntityNotFoundException("No user was found");
         }
 
+            User orgUser = userRepository.findByUsername(username);
 
+            if (newInfo.getUsername()==null){
+                newInfo.setUsername(orgUser.getUsername());
+            }
 
-        // this exception is never called just so it is not an optional
-        User orgUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id"+userId+"does not exist in db"));
+            if (newInfo.getPassword()==null){
+                newInfo.setPassword(orgUser.getPassword());
+            }
 
-        if(!jwtService.verifyToken("token", orgUser.getUsername())){
-            throw new AuthenticationFailedException("Authentication Failed");
-        } else {
+            if (newInfo.getEmail()==null){
+                newInfo.setEmail(orgUser.getEmail());
+            }
 
-        if (newInfo.getUsername()==null){
-            newInfo.setUsername(orgUser.getUsername());
-        }
+            if (newInfo.getPhoneNumber()==null){
+                newInfo.setPhoneNumber(orgUser.getPhoneNumber());
+            }
 
-        if (newInfo.getPassword()==null){
-            newInfo.setPassword(orgUser.getPassword());
-        }
+            if (newInfo.getPaymentMethod()==null){
+                newInfo.setPaymentMethod(orgUser.getPaymentMethod());
+            }
 
-        if (newInfo.getEmail()==null){
-            newInfo.setEmail(orgUser.getEmail());
-        }
+            // cant change id
+            newInfo.setId(orgUser.getId());
 
-        if (newInfo.getPhoneNumber()==null){
-            newInfo.setPhoneNumber(orgUser.getPhoneNumber());
-        }
+            //cant change role
+            newInfo.setRole(orgUser.getRole());
 
-        if (newInfo.getPaymentMethod()==null){
-            newInfo.setPaymentMethod(orgUser.getPaymentMethod());
-        }
-
-        newInfo.setId(orgUser.getId());
-
-        //cant change role
-        newInfo.setRole(orgUser.getRole());
-
-        newInfo.setBookings(orgUser.getBookings());
+            // should not be able to update bookings here
+            newInfo.setBookings(orgUser.getBookings());
 
 
 
-        return userRepository.save(newInfo);
+            return userRepository.save(newInfo);
 
         }
     }
 
 
-}
+
+
+

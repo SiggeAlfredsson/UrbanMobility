@@ -70,12 +70,40 @@ class JwtServiceTest {
     }
 
     @Test
-    void verifyTokenReturnsFalseOfTokenIsInCorrect() {
-
-
+    void verifyTokenReturnsFalseOfTokenIsInvalid() {
         assertFalse(jwtService.verifyToken("invalidToken","randomUsername"));
+    }
 
 
+    @Test
+    void getUsernameFromTokenReturnsUsernameIfValid() {
+        LoginDto auth = LoginDto.builder()
+                .username("sean")
+                .password("123").build();
+
+        when(authService.authenticate(auth)).thenReturn(true);
+
+        String token = jwtService.getToken(auth);
+
+        String usernameFromToken = jwtService.getUsernameFromToken(token);
+
+        assertNotNull(usernameFromToken);
+        assertEquals(auth.getUsername(),usernameFromToken);
 
     }
+
+    @Test
+    void getUsernameFromTokenReturnsNullIfTokenIsInvalid() {
+        LoginDto auth = LoginDto.builder()
+                .username("sean")
+                .password("wrongpassword").build();
+
+        String token = jwtService.getToken(auth);
+
+        String usernameFromToken = jwtService.getUsernameFromToken(token);
+
+        assertNull(usernameFromToken);
+
+    }
+
 }

@@ -26,6 +26,9 @@ import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+//Testes all logic in userService
+
+
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -47,12 +50,10 @@ class UserServiceTest {
 
         User newInfo = new User();
 
-        Mockito.when(userRepository.existsById(3L)).thenReturn(false);
-
 
         // Act and Assert
         assertThrows(EntityNotFoundException.class, () -> {
-            userService.updateUserById(3L, newInfo);
+            userService.updateUserWithToken(newInfo, "token");
         });
     }
 
@@ -61,36 +62,27 @@ class UserServiceTest {
 
     // IDK bout these
     @Test
-    void updateUserByIdWorks() {
+    void updateUserByTokenWorks() {
 
-        Long userId = 1L;
 
         User userOldInfo = User.builder()
-                .id(userId)
                 .username("fakeuser")
                 .password("password")
                 .email("fake@mail.com")
                 .build();
 
 
-        User userNewInfo1 = User.builder()
+        User userNewInfo = User.builder()
                 .username("newusername")
                 .build();
 
 
 
+        when(jwtService.getUsernameFromToken("token")).thenReturn(userOldInfo.getUsername());
+        when(userRepository.findByUsername(userOldInfo.getUsername())).thenReturn(userOldInfo);
+        when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
 
-//        userId is stubbing mismatch? but 1L works
-        when(userRepository.existsById(1L)).thenReturn(true);
-
-
-        // mocks that auth is valid
-        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(true);
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
-        when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
-
-        User updatedUser = userService.updateUserById(userId, userNewInfo1);
+        User updatedUser = userService.updateUserWithToken( userNewInfo, "token");
 
         assertEquals(userOldInfo.getId(), updatedUser.getId());
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
@@ -98,8 +90,10 @@ class UserServiceTest {
 
     }
 
+
+    // just to get 100% coverage on that method
     @Test
-    void updateUserByIdWhenUsernameIsNull() {
+    void updateUserWithTokenWhenUsernameIsNull() {
 
         Long userId = 1L;
 
@@ -115,15 +109,11 @@ class UserServiceTest {
                 .password("newpassword")
                 .build();
 
-        when(userRepository.existsById(1L)).thenReturn(true);
-
-        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(true);
-
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
+        when(jwtService.getUsernameFromToken("token")).thenReturn(userOldInfo.getUsername());
+        when(userRepository.findByUsername(userOldInfo.getUsername())).thenReturn(userOldInfo);
         when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
 
-        User updatedUser = userService.updateUserById(userId, userNewInfo);
+        User updatedUser = userService.updateUserWithToken( userNewInfo, "token");
 
         assertEquals(userOldInfo.getId(), updatedUser.getId());
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
@@ -135,29 +125,100 @@ class UserServiceTest {
     @Test
     void updateUserByIdThrowsAuthFailedExcWhenAuthIsFalse() {
 
-        Long userId = 1L;
-
-        User userOldInfo = User.builder()
-                .id(userId)
-                .username("fakeuser")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-
-        User newInfo = User.builder()
-                .username("username")
-                .password("newpassword")
-                .build();
-
-        when(userRepository.existsById(1L)).thenReturn(true);
-        when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
-
-        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(false);
+        User userNewInfo = new User();
 
 
-        assertThrows(AuthenticationFailedException.class, () -> {
-            userService.updateUserById(1L, newInfo);
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.updateUserWithToken(userNewInfo, "token");
         });
     }
+
+    @Test
+    void deleteUserWithTokenThrowsEntityNotFoundWhenUserWasNotFoundFromToken() {
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.deleteUserWithToken("fakeToken");
+        });
+
+    }
+
+    @Test
+    void deleteUserWithTokenDeletesUser() {
+        // arrange
+        String token = "mockedToken";
+        String username = "username";
+
+        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
+
+        User user = new User();
+        user.setId(1L);
+        user.setUsername(username);
+        when(userRepository.findByUsername(username)).thenReturn(user);
+
+        // act
+        userService.deleteUserWithToken(token);
+
+        // assert
+        verify(jwtService).getUsernameFromToken(token);
+        verify(userRepository).findByUsername(username);
+        verify(userRepository).deleteById(1L);
+
+    }
+
+    @Test
+    void deleteUserByIdAndTokenThrowsExceptionIfTokenIsFalse() {
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.deleteUserByIdAndToken(4L,"fakeToken");
+        });
+    }
+
+    @Test
+    void testDeleteUserByIdAndTokenSuccess() {
+        // Arrange
+        long userId = 1L;
+        String token = "mockedToken";
+        String username = "usernameadmin";
+
+        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
+
+        User adminUser = new User();
+        adminUser.setId(userId);
+        adminUser.setRole("ADMIN");
+
+        when(userRepository.findByUsername(username)).thenReturn(adminUser);
+
+        // Act
+        userService.deleteUserByIdAndToken(userId, token);
+
+        // Assert
+        verify(jwtService).getUsernameFromToken(token);
+        verify(userRepository).findByUsername(username);
+        verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    void deleteUserByIdAndTokenThrowsAuthExceptionIfRoleIsNotAdmin() {
+        // Arrange
+        long userId = 1L;
+        String token = "mockedToken";
+        String username = "usernamenotadmin";
+
+        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
+
+        User user = new User();
+        user.setId(userId);
+        user.setRole("USER");
+
+        when(userRepository.findByUsername(username)).thenReturn(user);
+
+        // Act
+        assertThrows(AuthenticationFailedException.class, () -> {
+            userService.deleteUserByIdAndToken(4L,token);
+        });
+
+    }
+
+
 
 }

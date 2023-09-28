@@ -24,7 +24,7 @@ class JwtServiceTest {
 
     @Test
     void getTokenReturnsTokenIfAuthIsTrue() {
-        var auth = LoginDto.builder()
+        LoginDto auth = LoginDto.builder()
                 .username("sean")
                 .password("123").build();
 
@@ -40,7 +40,7 @@ class JwtServiceTest {
 
     @Test
     void getTokenReturnsNullOfAuthIsFalse() {
-        var auth = LoginDto.builder()
+        LoginDto auth = LoginDto.builder()
                 .username("sean")
                 .password("123").build();
 
@@ -53,4 +53,29 @@ class JwtServiceTest {
 
     }
 
+    @Test
+    void verifyTokenReturnsTrueOfTokenIsCorrect() {
+        LoginDto auth = LoginDto.builder()
+                .username("sean")
+                .password("123").build();
+
+        when(authService.authenticate(auth)).thenReturn(true);
+
+        String token = jwtService.getToken(auth);
+
+        assertTrue(jwtService.verifyToken(token,auth.getUsername()));
+
+
+
+    }
+
+    @Test
+    void verifyTokenReturnsFalseOfTokenIsInCorrect() {
+
+
+        assertFalse(jwtService.verifyToken("invalidToken","randomUsername"));
+
+
+
+    }
 }

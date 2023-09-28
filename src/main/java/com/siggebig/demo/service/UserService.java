@@ -59,10 +59,9 @@ public class UserService {
         // this exception is never called just so it is not an optional
         User orgUser = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException("User with id"+userId+"does not exist in db"));
 
-        if(!jwtService.authenticateToken("token", orgUser.getUsername())){
+        if(!jwtService.verifyToken("token", orgUser.getUsername())){
             throw new AuthenticationFailedException("Authentication Failed");
-        }
-
+        } else {
 
         if (newInfo.getUsername()==null){
             newInfo.setUsername(orgUser.getUsername());
@@ -94,6 +93,8 @@ public class UserService {
 
 
         return userRepository.save(newInfo);
+
+        }
     }
 
 

@@ -85,7 +85,7 @@ class UserServiceTest {
 
 
         // mocks that auth is valid
-        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(true);
+        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(true);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
         when(userRepository.save(any(User.class))).thenReturn(userNewInfo1);
@@ -117,7 +117,7 @@ class UserServiceTest {
 
         when(userRepository.existsById(1L)).thenReturn(true);
 
-        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(true);
+        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(true);
 
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
@@ -152,7 +152,7 @@ class UserServiceTest {
         when(userRepository.existsById(1L)).thenReturn(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userOldInfo));
 
-        when(jwtService.authenticateToken(anyString(),anyString())).thenReturn(false);
+        when(jwtService.verifyToken(anyString(),anyString())).thenReturn(false);
 
 
         assertThrows(AuthenticationFailedException.class, () -> {

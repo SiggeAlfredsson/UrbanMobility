@@ -41,11 +41,10 @@ public class User {
     private String role;
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Payment> payments;
+    // should a list of all payments be here to?
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user")
     private List<Booking> bookings;
 
 }

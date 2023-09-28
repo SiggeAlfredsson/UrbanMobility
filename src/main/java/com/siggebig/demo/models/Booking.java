@@ -20,8 +20,7 @@ public class Booking {
 
 
     // the user need to make one payment when booking a trip
-    @OneToOne
-    @JoinColumn(name = "payment_id")
+    @OneToOne(mappedBy = "booking")
     private Payment payment;
 
     // the booking must have one user, but the user can have many bookings
@@ -29,8 +28,9 @@ public class Booking {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // the booking must have a trip, what else are you paying for?? each booking is individual so 1to1
-    @OneToOne
+    // the booking must have a trip, what else are you paying for?? each booking is individual
+    // but a trip can have many individual bookings so manytoone
+    @ManyToOne
     @JoinColumn(name = "trip_id")
     private Trip trip;
 

@@ -32,7 +32,7 @@ public class Trip {
     private String arrivalTime;
 
     // one trip can have many bookings, this makes it easy to add available slots left too.
-    @OneToMany(mappedBy = "trip_id")
+    @OneToMany(mappedBy = "trip")
     private List<Booking> bookings;
 
 }

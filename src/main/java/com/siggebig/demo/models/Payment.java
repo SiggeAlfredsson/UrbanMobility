@@ -25,7 +25,8 @@ public class Payment {
     private int amount;
     private Date date;
 
-    @OneToOne(mappedBy = "payment")
+    @OneToOne
+    @JoinColumn(name = "booking_id")
     private Booking booking;
 
 }

@@ -175,50 +175,83 @@ class UserServiceTest {
 
     @Test
     void testDeleteUserByIdAndTokenSuccess() {
-        // Arrange
-        long userId = 1L;
+
         String token = "mockedToken";
-        String username = "usernameadmin";
 
-        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
+        long idToDelete = 420L;
 
-        User adminUser = new User();
-        adminUser.setId(userId);
-        adminUser.setRole("ADMIN");
 
-        when(userRepository.findByUsername(username)).thenReturn(adminUser);
+        User user = User.builder()
+                .id(1L)
+                .username("administrator")
+                .role("ADMIN")
+                .build();
 
-        // Act
-        userService.deleteUserByIdAndToken(userId, token);
+        when(jwtService.getUsernameFromToken(token)).thenReturn(user.getUsername());
 
-        // Assert
+
+
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userService.existsById(idToDelete)).thenReturn(true);
+
+        userService.deleteUserByIdAndToken(idToDelete, token);
+
         verify(jwtService).getUsernameFromToken(token);
-        verify(userRepository).findByUsername(username);
-        verify(userRepository).deleteById(userId);
+        verify(userRepository).findByUsername(user.getUsername());
+        verify(userRepository).deleteById(idToDelete);
     }
 
     @Test
     void deleteUserByIdAndTokenThrowsAuthExceptionIfRoleIsNotAdmin() {
-        // Arrange
-        long userId = 1L;
+
         String token = "mockedToken";
-        String username = "usernamenotadmin";
 
-        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
+        User user = User.builder()
+                .id(1L)
+                .username("userusername")
+                .role("USER")
+                .build();
 
-        User user = new User();
-        user.setId(userId);
-        user.setRole("USER");
+        when(jwtService.getUsernameFromToken(token)).thenReturn(user.getUsername());
 
-        when(userRepository.findByUsername(username)).thenReturn(user);
 
-        // Act
+
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+        when(userService.existsById(4L)).thenReturn(true);
+
+
         assertThrows(AuthenticationFailedException.class, () -> {
             userService.deleteUserByIdAndToken(4L,token);
         });
 
     }
 
+
+    @Test
+    void deleteUserByIdAndTokenThrowsEntityNotFoundExceptionIfUserIdDoesNotExist() {
+
+        String token = "mockedToken";
+
+        User user = User.builder()
+                .id(1L)
+                .username("userusername")
+                .role("USER")
+                .build();
+
+        when(jwtService.getUsernameFromToken(token)).thenReturn(user.getUsername());
+
+
+
+        when(userRepository.findByUsername(user.getUsername())).thenReturn(user);
+        when(userService.existsById(69L)).thenReturn(false);
+
+
+        // Act
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.deleteUserByIdAndToken(69L,token);
+        });
+
+    }
 
 
 }

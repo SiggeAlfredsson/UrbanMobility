@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -28,6 +29,10 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
+
 
 
     public boolean existsById(long id) {
@@ -43,10 +48,14 @@ public class UserService {
     public void deleteUserByIdAndToken(long userId, String token) {
 
         String username = jwtService.getUsernameFromToken(token);
-        User user = userRepository.findByUsername(username);
+        User user = findByUsername(username);
 
         if(user==null || username==null){
-            throw new EntityNotFoundException("No user found in token");
+            throw new EntityNotFoundException("invalid token");
+        }
+
+        if(!existsById(userId)){
+            throw new EntityNotFoundException("No user with that Id");
         }
 
         if(user.getRole().equals("ADMIN")){
@@ -62,10 +71,9 @@ public class UserService {
         if(username==null) {
             throw new EntityNotFoundException("no user found");
         } else {
-            User user = userRepository.findByUsername(username);
+            User user = findByUsername(username);
             userRepository.deleteById(user.getId());
         }
-
     }
 
     public Optional<User> findById(long userId) { return userRepository.findById(userId); }

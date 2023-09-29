@@ -36,38 +36,45 @@ public class UserController {
         }
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Optional<User>> getUserById (@PathVariable("id") long userId) {
         Optional<User> user = userService.findById(userId);
 
-        if (user.isEmpty()) {
+        // to ask if isEmpty it throws nullpointerexc so
+        if (user==null) {
             return ResponseEntity.status(204).header("x-info", "No user with that id").build();
         } else {
             return ResponseEntity.ok(user);
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteUserWithId(@PathVariable("id") long userId, @RequestHeader("JWTToken") String token) {
-        try {
-            userService.deleteUserByIdAndToken(userId, token);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (AuthenticationFailedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Auth failed");
-        }
+    //not needed for assignment but fun to do, would finish if more time
+//    @DeleteMapping("/delete/{id}")
+//    public ResponseEntity<String> deleteUserWithId(@PathVariable("id") long userId, @RequestHeader("JWTToken") String token) {
+//        try {
+//            userService.deleteUserByIdAndToken(userId, token);
+//            System.out.println("HELLLOOOO");
+//
+//        } catch (EntityNotFoundException e) {
+//            // 404
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+//        } catch (AuthenticationFailedException e) {
+//            //401
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Auth failed");
+//        }
+//
+//        return ResponseEntity.ok("User deleted successfully");
+//
+//    }
 
-        return ResponseEntity.ok("User deleted successfully");
-    }
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteUserWithToken(@RequestHeader("JWTToken") String token) {
         try {
             userService.deleteUserWithToken(token);
         } catch (EntityNotFoundException e) {
+            // 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-        } catch (AuthenticationFailedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Auth failed");
         }
 
 
@@ -77,11 +84,13 @@ public class UserController {
     @PutMapping("/update")
     public ResponseEntity<User> updateUserWithToken(@RequestBody User updatedUser, @RequestHeader("JWTToken") String token) {
 
-//        if(!userService.existsById(userId)){
-//            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
-//        }
+//
+        try {
+            userService.updateUserWithToken(updatedUser, token);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
+        }
 
-        userService.updateUserWithToken(updatedUser, token);
         return ResponseEntity.ok().body(updatedUser);
 
     }

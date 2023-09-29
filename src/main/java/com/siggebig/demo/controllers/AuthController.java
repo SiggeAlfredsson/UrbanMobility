@@ -32,7 +32,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-        try {
             String token = jwtService.getToken(loginDto);
             if (token != null) {
                 return ResponseEntity.ok(Map.of("token", token));
@@ -40,11 +39,6 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Authentication failed");
             }
-        } catch (AuthenticationFailedException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed");
-        }
-
     }
 
     @PostMapping("/register")

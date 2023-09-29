@@ -75,7 +75,7 @@ class AuthControllerTest {
     }
 
     @Test
-    public void testLoginWithInvalidCredentials() throws Exception {
+    void testLoginWithInvalidCredentials() throws Exception {
         // Ogiltiga inloggningsuppgifter
         LoginDto invalidLoginDto = LoginDto.builder()
                 .username("username")
@@ -95,8 +95,9 @@ class AuthControllerTest {
                 .andExpect(content().string("Authentication failed"));
     }
 
+
     @Test
-    void testCreateUser() throws Exception {
+    void testCreateUserValid() throws Exception {
         User user = User.builder()
                 .username("fakeuser")
                 .password("password")
@@ -114,4 +115,46 @@ class AuthControllerTest {
                 .andExpect(content().string("User registered"));
 
     }
+
+    @Test
+    void testCreateUserInvalidInputs() throws Exception {
+        User user = User.builder()
+                .role("USER")
+                .build();
+
+        //convert object user to JSON
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(user);
+
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Not valid inputs"));
+
+    }
+
+    @Test
+    void testCreateUserInvalidUsername() throws Exception {
+        User user = User.builder()
+                .username("takenusername")
+                .password("password")
+                .role("USER")
+                .build();
+
+        //convert object user to JSON
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(user);
+
+        Mockito.when(userService.existsByUsername(user.getUsername())).thenReturn(true);
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().is(400))
+                .andExpect(content().string("Username is taken"));
+
+    }
+
 }

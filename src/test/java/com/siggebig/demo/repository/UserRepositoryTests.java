@@ -99,7 +99,6 @@ public class UserRepositoryTests {
     }
 
 
-
     @Test
     void deleteUserByIdDeletesUser() {
         //arrange

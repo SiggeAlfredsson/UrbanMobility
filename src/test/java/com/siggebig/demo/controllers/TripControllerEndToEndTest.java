@@ -1,6 +1,7 @@
 package com.siggebig.demo.controllers;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siggebig.demo.DTO.LoginDto;
 import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.models.User;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class TripControllerEndToEndTest {
 
     //this code is not dry but i got bugs i dident have time to figure out when doing beforeeach
+    // do test code even need to be dry?
 
     @Autowired
     private MockMvc mockMvc;
@@ -51,6 +53,52 @@ public class TripControllerEndToEndTest {
     public void setupDatabase() {
         userRepository.deleteAll();
         tripRepository.deleteAll();
+    }
+
+    @Test
+    void createTripWithValidTokenReturnsOkAndTrip() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+        userRepository.save(vasttrafik);
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                //.user(vasttrafik) User should come from the token and not in the body
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        String tripJson = mapper.writeValueAsString(trip);
+
+        LoginDto loginDto = LoginDto.builder()
+                .username(vasttrafik.getUsername())
+                .password(vasttrafik.getUsername())
+                .build();
+
+        String token = jwtService.getToken(loginDto);
+
+        mockMvc.perform(post("/trip")
+                .header("JWTToken", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tripJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.departure").value("Uddevalla"))
+                .andExpect(jsonPath("$.arrival").value("Vänersborg"))
+                .andExpect(jsonPath("$.price").value("100"))
+                .andExpect(jsonPath("$.user.username").value("VästTrafik"));
+
+
     }
 
     @Test

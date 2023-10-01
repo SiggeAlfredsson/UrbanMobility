@@ -22,6 +22,9 @@ public class UserController {
     private UserService userService;
 
 
+    //create user is in authcontroller
+
+
 
     @GetMapping()
     public ResponseEntity<List<User>> getAllUsers () {
@@ -94,9 +97,7 @@ public class UserController {
             return ResponseEntity.badRequest().header("x-info", "Invalid data, check new info or token").build(); //would be nice to have one for each
         }
 
-
         return ResponseEntity.ok().body(updatedUser);
-
     }
 
 

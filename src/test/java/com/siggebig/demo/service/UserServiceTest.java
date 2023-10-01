@@ -60,7 +60,7 @@ class UserServiceTest {
 
 
 
-    // IDK bout these
+    // IDK bout these 2
     @Test
     void updateUserByTokenWorks() {
 
@@ -90,8 +90,6 @@ class UserServiceTest {
 
     }
 
-
-    // just to get 100% coverage on that method
     @Test
     void updateUserWithTokenWhenUsernameIsNull() {
 

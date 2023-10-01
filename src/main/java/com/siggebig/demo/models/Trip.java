@@ -2,16 +2,17 @@ package com.siggebig.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 
 // a trip is something a supplier can make, like västtrafik can add a buss ride
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
 @Table(name = "trips")
 public class Trip {
@@ -34,5 +35,11 @@ public class Trip {
     // one trip can have many bookings, this makes it easy to add available slots left too.
     @OneToMany(mappedBy = "trip")
     private List<Booking> bookings;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id") //maybe username? A trip is linked to a supplier(ex västtrafik)
+    private User user;
+
+
 
 }

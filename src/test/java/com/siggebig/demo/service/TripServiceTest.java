@@ -126,5 +126,30 @@ public class TripServiceTest {
 
     }
 
+    @Test
+    void deleteTripWithIdAndTokenVerifyDeleteByIdIfUsernameMatch() {
+        User user = User.builder()
+                .username("username")
+                .password("password")
+                .role("ADMIN")
+                .build();
+
+
+        when(jwtService.getUsernameFromToken("validToken")).thenReturn("username");
+        when(userService.findByUsername("username")).thenReturn(user);
+
+        Trip trip = Trip.builder()
+                .user(user)
+                .build();
+
+        when(tripService.findById(3L)).thenReturn(Optional.ofNullable(trip));
+
+
+        tripService.deleteTripWithIdAndToken(3L,"validToken");
+
+        verify(tripRepository).deleteById(3L);
+
+    }
+
 
 }

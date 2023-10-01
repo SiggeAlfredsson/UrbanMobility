@@ -32,9 +32,6 @@ class UserControllerEndToEndTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserService userService;
-
 
     @Autowired
     private JwtService jwtService;

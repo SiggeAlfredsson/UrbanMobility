@@ -1,12 +1,13 @@
 package com.siggebig.demo.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.siggebig.demo.DTO.LoginDto;
 import com.siggebig.demo.models.User;
+import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.AuthService;
 import com.siggebig.demo.service.JwtService;
 import com.siggebig.demo.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -21,36 +22,37 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-
-@WebMvcTest(controllers = AuthController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
-//@SpringBootTest
-class AuthControllerTest {
+@SpringBootTest
+class AuthControllerEndToEndTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private UserService userService;
+    @Autowired
+    private UserRepository userRepository;
 
-    @MockBean
+    @Autowired
     private JwtService jwtService;
 
-    @MockBean
-    private AuthService authService;
 
 
+    @BeforeEach
+    public void setUp() {
+        // clear the database and add a test user
+        userRepository.deleteAll();
+        User user = User.builder()
+                .id(1L)
+                .username("username")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+        userRepository.save(user);
+
+    }
 
     @Test
     void testLoginWithValidCred() throws Exception {
@@ -64,8 +66,6 @@ class AuthControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         String credJson = mapper.writeValueAsString(loginDto);
 
-//        Mockito.when(authService.authenticate(Mockito.any())).thenReturn(true);  dident get this to work so just mocked the token generation and auth
-        Mockito.when(jwtService.getToken(loginDto)).thenReturn("valid_token");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,17 +76,16 @@ class AuthControllerTest {
 
     @Test
     void testLoginWithInvalidCredentials() throws Exception {
-        // Ogiltiga inloggningsuppgifter
+
         LoginDto invalidLoginDto = LoginDto.builder()
                 .username("username")
-                .password("wrongpassword")  // Använd ogiltigt lösenord
+                .password("wrongpassword")  // not valid
                 .build();
 
         //convert object creds to JSON
         ObjectMapper mapper = new ObjectMapper();
         String credJson = mapper.writeValueAsString(invalidLoginDto);
 
-        Mockito.when(authService.authenticate(invalidLoginDto)).thenReturn(false);
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -118,6 +117,8 @@ class AuthControllerTest {
 
     @Test
     void testCreateUserInvalidInputs() throws Exception {
+
+        // password is required to create a user
         User user = User.builder()
                 .role("USER")
                 .build();
@@ -138,7 +139,7 @@ class AuthControllerTest {
     @Test
     void testCreateUserInvalidUsername() throws Exception {
         User user = User.builder()
-                .username("takenusername")
+                .username("username") //username is already taken in db
                 .password("password")
                 .role("USER")
                 .build();
@@ -147,7 +148,6 @@ class AuthControllerTest {
         ObjectMapper mapper = new ObjectMapper();
         String userJson = mapper.writeValueAsString(user);
 
-        Mockito.when(userService.existsByUsername(user.getUsername())).thenReturn(true);
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

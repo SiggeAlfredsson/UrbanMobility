@@ -5,6 +5,8 @@ import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.TripRepository;
 import com.siggebig.demo.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
@@ -22,7 +25,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class TripControllerEndToEndTest {
 
     @Autowired
@@ -35,10 +39,26 @@ public class TripControllerEndToEndTest {
     private UserRepository userRepository;
 
     @BeforeEach
-    public void setUp() {
-        // clear the database and add a test users
+    @Transactional
+    public void setupDatabase() {
+        userRepository.deleteAll();
         tripRepository.deleteAll();
+    }
 
+
+
+    @Test
+    void getAllTripsReturns204IfEmpty() throws Exception {
+
+
+        mockMvc.perform(get("/trip"))
+                .andExpect(status().is(204))
+                .andExpect(header().string("x-info","No trips found in db"));
+
+    }
+
+    @Test
+    void getAllTripsReturnsTripsAndOk() throws Exception {
         User vasttrafik = User.builder()
                 .id(1L)
                 .username("VästTrafik")
@@ -86,22 +106,6 @@ public class TripControllerEndToEndTest {
 
         tripRepository.save(trip);
         tripRepository.save(trip2);
-
-
-    }
-
-    @Test
-    void getAllTripsReturns204IfEmpty() throws Exception {
-        tripRepository.deleteAll();
-
-        mockMvc.perform(get("/trip"))
-                .andExpect(status().is(204))
-                .andExpect(header().string("x-info","No trips found in db"));
-
-    }
-
-    @Test
-    void getAllTripsReturnsTripsAndOk() throws Exception {
 
         mockMvc.perform(get("/trip"))
                 .andExpect(status().is(200))

@@ -6,6 +6,8 @@ import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.JwtService;
 import com.siggebig.demo.service.UserService;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
@@ -24,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
+//@ExtendWith(MockitoExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD) //this fixes bug where ID got higher than it should be in tests
 class UserControllerEndToEndTest {
 
 
@@ -39,10 +43,25 @@ class UserControllerEndToEndTest {
     @Autowired
     private JwtService jwtService;
 
+
     @BeforeEach
-    public void setUp() {
-        // clear the database and add a test users
+    @Transactional
+    public void setupDatabase() {
         userRepository.deleteAll();
+    }
+
+    @AfterEach
+    @Transactional
+    @DirtiesContext // signals that the context should be dirtied (reloaded) after the test method
+    public void cleanupDatabase() {
+        userRepository.deleteAll();
+    }
+
+
+
+    @Test
+    void getAllUsersReturnsUsersAndOk() throws Exception {
+
         User user = User.builder()
                 .id(1L)
                 .username("user1")
@@ -58,12 +77,6 @@ class UserControllerEndToEndTest {
                 .build();
         userRepository.save(user);
         userRepository.save(user2);
-    }
-
-
-
-    @Test
-    void getAllUsersReturnsUsersAndOk() throws Exception {
 
 
         mockMvc.perform(get("/user")
@@ -77,7 +90,6 @@ class UserControllerEndToEndTest {
     @Test
     void getAllUsersReturns204WhenNoUsers() throws Exception {
 
-        userRepository.deleteAll();
 
 
         mockMvc.perform(get("/user")
@@ -87,31 +99,34 @@ class UserControllerEndToEndTest {
 
     }
 
-//    @Test fråga jakob why no work work
-//    void getUserByIdReturnsCorrectUser() throws Exception {
-////        User user = User.builder()
-////                .id(1L)
-////                .username("user1")
-////                .password("password")
-////                .email("fake@mail.com")
-////                .build();
-////        userRepository.save(user);
-//
-//
-//        mockMvc.perform(get("/user/1")
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.username").value("user1"));
-////                .andExpect(jsonPath("$.id").value(2));
-//        //wtf? fråga jakob, why is id weird
-//
-//    }
+    @Test //fråga jakob why no work work
+    void getUserByIdReturnsCorrectUser() throws Exception {
+        User user = User.builder()
+                .username("user1")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+        User user2 = User.builder()
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .role("USER")
+                .build();
+        userRepository.save(user);
+        userRepository.save(user2);
+
+
+        mockMvc.perform(get("/user/2")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("fakeuser"))
+                .andExpect(jsonPath("$.id").value(2));
+
+
+    }
 
     @Test
     void getUserByIdReturns204IfUserNotFound() throws Exception {
-
-        //make sure 66 do not exist
-        userRepository.deleteById(66L);
 
         mockMvc.perform(get("/user/66")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -120,8 +135,19 @@ class UserControllerEndToEndTest {
     }
 
 
-    @Test // is this test even valid because it returns 200 whatever i do as long as i dont force throw a exc as below
+    @Test
     void deleteUserWithTokenReturnsOkIfSuccess() throws Exception {
+
+
+        User user2 = User.builder()
+                .id(2L)
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .role("USER")
+                .build();
+        userRepository.save(user2);
+
 
                     //this is user2
                 LoginDto loginDto = LoginDto.builder()
@@ -154,6 +180,22 @@ class UserControllerEndToEndTest {
     @Test // why dis not work?
     void updateUserWithTokenReturnsOkAndUpdatedUserIfSuccess() throws Exception {
 
+        User user = User.builder()
+                .id(1L)
+                .username("user1")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+        User user2 = User.builder()
+                .id(2L)
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .role("USER")
+                .build();
+        userRepository.save(user);
+        userRepository.save(user2);
+
         User newInfo = User.builder()
                 .username("newusername")
                 .password("newpassword")
@@ -177,7 +219,7 @@ class UserControllerEndToEndTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userJson))
                 .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.id").value("2")) igen wtf??? jakob
+                .andExpect(jsonPath("$.id").value("2"))
                 .andExpect(jsonPath("$.role").value("USER"))
                 .andExpect(jsonPath("$.password").value("newpassword"))
                 .andExpect(jsonPath("$.username").value("newusername"));

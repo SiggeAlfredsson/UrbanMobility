@@ -7,6 +7,8 @@ import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.AuthService;
 import com.siggebig.demo.service.JwtService;
 import com.siggebig.demo.service.UserService;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -26,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // are these EndToEnd tests or integration tests?
 
 @AutoConfigureMockMvc
-@ExtendWith(MockitoExtension.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD) // fixes bug i did not quite understand
 @SpringBootTest
 class AuthControllerEndToEndTest {
 
@@ -36,13 +39,26 @@ class AuthControllerEndToEndTest {
     @Autowired
     private UserRepository userRepository;
 
-
-
-
     @BeforeEach
-    public void setUp() {
-        // clear the database and add a test user
+    @Transactional
+    public void setupDatabase() {
         userRepository.deleteAll();
+    }
+
+    @AfterEach
+    @Transactional
+    @DirtiesContext // signals that the context should be dirtied (reloaded) after the test method
+    public void cleanupDatabase() {
+        userRepository.deleteAll();
+    }
+
+
+
+
+
+    @Test
+    void testLoginWithValidCred() throws Exception {
+
         User user = User.builder()
                 .id(1L)
                 .username("username")
@@ -51,11 +67,6 @@ class AuthControllerEndToEndTest {
                 .build();
 
         userRepository.save(user);
-
-    }
-
-    @Test
-    void testLoginWithValidCred() throws Exception {
 
         LoginDto loginDto = LoginDto.builder()
                 .username("username")
@@ -76,6 +87,15 @@ class AuthControllerEndToEndTest {
 
     @Test
     void testLoginWithInvalidCredentials() throws Exception {
+
+        User user = User.builder()
+                .id(1L)
+                .username("username")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+        userRepository.save(user);
 
         LoginDto invalidLoginDto = LoginDto.builder()
                 .username("username")
@@ -113,6 +133,7 @@ class AuthControllerEndToEndTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("User registered"));
 
+
     }
 
     @Test
@@ -138,6 +159,15 @@ class AuthControllerEndToEndTest {
 
     @Test
     void testCreateUserInvalidUsername() throws Exception {
+
+        User user2 = User.builder()
+                .username("username")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+
+        userRepository.save(user2);
+
         User user = User.builder()
                 .username("username") //username is already taken in db
                 .password("password")

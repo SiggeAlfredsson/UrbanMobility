@@ -38,6 +38,8 @@ public class User {
     private String phoneNumber;
     private String paymentMethod; // ?? swish
     private int paymentNumber; // swish number
+
+     //@Enumerated(EnumType.STRING)
     private String role;
 
 

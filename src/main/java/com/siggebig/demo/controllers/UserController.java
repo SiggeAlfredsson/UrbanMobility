@@ -3,6 +3,7 @@ package com.siggebig.demo.controllers;
 import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
+import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping()
     public ResponseEntity<List<User>> getAllUsers () {
@@ -40,8 +44,7 @@ public class UserController {
     public ResponseEntity<Optional<User>> getUserById (@PathVariable("id") long userId) {
         Optional<User> user = userService.findById(userId);
 
-        // to ask if isEmpty it throws nullpointerexc so
-        if (user==null) {
+        if (user.isEmpty()) {
             return ResponseEntity.status(204).header("x-info", "No user with that id").build();
         } else {
             return ResponseEntity.ok(user);
@@ -84,12 +87,17 @@ public class UserController {
     @PutMapping("/update")
     public ResponseEntity<User> updateUserWithToken(@RequestBody User updatedUser, @RequestHeader("JWTToken") String token) {
 
-//
+
         try {
-            userService.updateUserWithToken(updatedUser, token);
+            if(updatedUser==null) {
+                throw new EntityNotFoundException("No new info");
+            } else {
+                userService.updateUserWithToken(updatedUser, token);
+            }
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().header("x-info", "No user with that id").build();
+            return ResponseEntity.badRequest().header("x-info", "Invalid data, check new info or token").build();
         }
+
 
         return ResponseEntity.ok().body(updatedUser);
 

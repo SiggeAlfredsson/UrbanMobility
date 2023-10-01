@@ -1,49 +1,28 @@
 package com.siggebig.demo.controllers;
 
-import com.siggebig.demo.Exception.EntityNotFoundException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.siggebig.demo.DTO.LoginDto;
 import com.siggebig.demo.models.User;
+import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.JwtService;
 import com.siggebig.demo.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-@WebMvcTest(controllers = UserController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@SpringBootTest
+@AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
-class UserControllerTest {
+class UserControllerEndToEndTest {
 
 
 
@@ -51,16 +30,33 @@ class UserControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private UserController userController;
+    private UserRepository userRepository;
 
-
-    // this fixed no qualifying bean of type userService
-    @MockBean
+    @Autowired
     private UserService userService;
 
-    @MockBean
+
+    @Autowired
     private JwtService jwtService;
 
+    @BeforeEach
+    public void setUp() {
+        // clear the database and add a test users
+        userRepository.deleteAll();
+        User user = User.builder()
+                .username("user1")
+                .password("password")
+                .email("fake@mail.com")
+                .build();
+        User user2 = User.builder()
+                .username("fakeuser")
+                .password("password")
+                .email("fake@mail.com")
+                .role("USER")
+                .build();
+        userRepository.save(user);
+        userRepository.save(user2);
+    }
 
 
 //    Unit test ?
@@ -79,29 +75,12 @@ class UserControllerTest {
 
     @Test
     void getAllUsersReturnsUsers() throws Exception {
-        List<User> users = new ArrayList<>();
-
-        User user = User.builder()
-                .username("user1")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-        User user2 = User.builder()
-                .username("fakeuser")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-
-        users.add(user);
-        users.add(user2);
-
-        when(userService.getAllUsers()).thenReturn(users);
 
 
         mockMvc.perform(get("/user")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(users.size()))
+                .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].username").value("user1"))
                 .andExpect(jsonPath("$[1].username").value("fakeuser"));
 
@@ -111,26 +90,20 @@ class UserControllerTest {
     @Test
     void getUserByIdReturnsCorrectUser() throws Exception {
 
-        User user = User.builder()
-                .id(43L)
-                .username("username")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
 
-        when(userService.findById(43L)).thenReturn(Optional.ofNullable(user));
-
-        mockMvc.perform(get("/user/43")
+        mockMvc.perform(get("/user/2")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value(user.getUsername()))
-                .andExpect(jsonPath("$.id").value(user.getId()));
+                .andExpect(jsonPath("$.username").value("fakeuser"))
+                .andExpect(jsonPath("$.id").value("2"));
 
     }
 
     @Test
     void getUserByIdReturns204IfUserNotFound() throws Exception {
-        when(userService.findById(43L)).thenReturn(null);
+
+        //make sure 43 do not exist
+        userRepository.deleteById(43L);
 
         mockMvc.perform(get("/user/43")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -141,33 +114,27 @@ class UserControllerTest {
 
     @Test // is this test even valid because it returns 200 whatever i do as long as i dont force throw a exc as below
     void deleteUserWithTokenReturnsOkIfSuccess() throws Exception {
-                User user = User.builder()
-                .id(43L)
-                .username("username")
-                .password("password")
-                .email("fake@mail.com")
-                .role("USER")
-                .build();
 
-                when(jwtService.getUsernameFromToken("validToken")).thenReturn(user.getUsername());
-                when(userService.findByUsername(user.getUsername())).thenReturn(user);
+                    //this is user2
+                LoginDto loginDto = LoginDto.builder()
+                        .username("fakeuser")
+                        .password("password")
+                        .build();
+
+                String token = jwtService.getToken(loginDto);
+
+
 
                 mockMvc.perform(delete("/user/delete")
-                                .header("JWTToken", "validToken"))
+                                .header("JWTToken", token))
                                 .andExpect(status().isOk())
                                 .andExpect(content().string("User deleted successfully"));
 
     }
 
-    // Why does this test not work? fråga jakob, något med hur jag satt upp bönor/wires
+
     @Test
     void deleteUserWithTokenReturns404IfTokenInvalid() throws Exception {
-
-//        when(jwtService.getUsernameFromToken("invalidtoken")).thenReturn(null); Why does this not work??
-
-        //Why do i have to force a throw why cant it throw the exception by itself when the username is null as it should?
-        Mockito.doThrow(new EntityNotFoundException("User not found"))
-                .when(userService).deleteUserWithToken(anyString());
 
         mockMvc.perform(delete("/user/delete")
                         .header("JWTToken", "invalidtoken"))
@@ -176,9 +143,54 @@ class UserControllerTest {
     }
 
 
+    @Test // why dis not work?
+    void updateUserWithTokenReturnsOkAndUpdatedUserIfSuccess() throws Exception {
+
+        User newInfo = User.builder()
+                .username("newusername")
+                .password("newpassword")
+                .build();
 
 
-// tester nedan är samma som test ovan, get alltid 200 http status
+
+        //convert object user to JSON
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(newInfo);
+
+        //user2
+        LoginDto loginDto = LoginDto.builder()
+                .username("fakeuser")
+                .password("password")
+                .build();
+
+        String token = jwtService.getToken(loginDto);
+
+
+        mockMvc.perform(put("/user/update")
+                .header("JWTToken", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("2"))
+                .andExpect(jsonPath("$.role").value("USER"))
+                .andExpect(jsonPath("$.password").value("newpassword"))
+                .andExpect(jsonPath("$.username").value("newusername"));
+
+
+    }
+
+    @Test
+    void updateUserWithTokenReturns400IfEntityNotFound() throws Exception {
+
+
+
+        mockMvc.perform(put("/user/update")
+                        .header("JWTToken", "invalidtoken"))
+                .andExpect(status().is(400));
+
+    }
+
+// tester nedan är samma som test ovan, get alltid 200 http status, inte end to end tester heller
 
 
 //  I commented out the method in the controller because it is not needed in assignment and the time was running out

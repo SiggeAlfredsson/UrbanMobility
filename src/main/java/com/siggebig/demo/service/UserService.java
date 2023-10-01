@@ -89,7 +89,7 @@ public class UserService {
             throw new EntityNotFoundException("No user was found");
         }
 
-            User orgUser = userRepository.findByUsername(username);
+            User orgUser = findByUsername(username);
 
             if (newInfo.getUsername()==null){
                 newInfo.setUsername(orgUser.getUsername());

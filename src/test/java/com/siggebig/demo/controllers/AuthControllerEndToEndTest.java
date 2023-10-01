@@ -23,6 +23,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
+// are these EndToEnd tests or integration tests?
+
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -34,8 +36,6 @@ class AuthControllerEndToEndTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private JwtService jwtService;
 
 
 
@@ -96,7 +96,7 @@ class AuthControllerEndToEndTest {
 
 
     @Test
-    void testCreateUserValid() throws Exception {
+    void testCreateUserValidInputs() throws Exception {
         User user = User.builder()
                 .username("fakeuser")
                 .password("password")

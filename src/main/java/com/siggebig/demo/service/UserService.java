@@ -51,7 +51,7 @@ public class UserService {
         User user = findByUsername(username);
 
         if(user==null || username==null){
-            throw new EntityNotFoundException("invalid token");
+            throw new EntityNotFoundException("invalid token"); // this maybe should be authfailedexc
         }
 
         if(!existsById(userId)){

@@ -23,6 +23,7 @@ public class TripService {
     @Autowired
     private UserService userService;
 
+    public Trip save(Trip trip) { return tripRepository.save(trip); }
 
     public Optional<Trip> findById(long tripId) {
         return tripRepository.findById(tripId);
@@ -62,5 +63,18 @@ public class TripService {
         }
     }
 
+    public Trip createTripWithToken(Trip trip, String token) {
+        String username = jwtService.getUsernameFromToken(token);
+        User supplier = userService.findByUsername(username);
+
+        if(supplier==null || username==null || !supplier.getRole().equals("SUPPLIER")) {
+            throw new AuthenticationFailedException("Invalid token");
+        } else {
+            trip.setUser(supplier);
+            save(trip);
+            return trip;
+        }
+
     }
+}
 

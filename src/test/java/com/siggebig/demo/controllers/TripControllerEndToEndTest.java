@@ -1,7 +1,9 @@
 package com.siggebig.demo.controllers;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.siggebig.demo.DTO.LoginDto;
 import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.models.User;
@@ -56,6 +58,23 @@ public class TripControllerEndToEndTest {
     }
 
     @Test
+    void createTripWithInvalidTokenReturns400() throws Exception {
+        Trip trip = new Trip();
+        String fakeToken = "skraap pappap";
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // jackson?
+        String tripJson = mapper.writeValueAsString(trip);
+
+        mockMvc.perform(post("/trip")
+                        .header("JWTToken", fakeToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tripJson))
+                .andExpect(status().is(400));
+
+    }
+
+    @Test
     void createTripWithValidTokenReturnsOkAndTrip() throws Exception {
         User vasttrafik = User.builder()
                 .id(1L)
@@ -79,14 +98,18 @@ public class TripControllerEndToEndTest {
                 .build();
 
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // jackson?
         String tripJson = mapper.writeValueAsString(trip);
 
         LoginDto loginDto = LoginDto.builder()
                 .username(vasttrafik.getUsername())
-                .password(vasttrafik.getUsername())
+                .password(vasttrafik.getPassword())
                 .build();
 
         String token = jwtService.getToken(loginDto);
+
+        String username = jwtService.getUsernameFromToken(token);
+        User supplier = userRepository.findByUsername(username);
 
         mockMvc.perform(post("/trip")
                 .header("JWTToken", token)

@@ -23,9 +23,12 @@ public class TripController {
 
     // create a trip with token, need to be supplier
     @PostMapping()
-    public ResponseEntity<Trip> addTrip(@RequestBody Trip trip, String token) {
-
-        return ResponseEntity.ok(trip);
+    public ResponseEntity<Trip> addTrip(@RequestBody Trip trip,@RequestHeader ("JWTToken") String token) {
+        try{
+            tripService.createTripWithToken(trip, token);
+            return ResponseEntity.ok(trip);
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.badRequest().header("x-info", "Invalid token").build();        }
     }
 
     // get all trips info
@@ -70,7 +73,8 @@ public class TripController {
     }
 
 
-
+        // putmapping not required for assignment, supplier can just delete a trip and make a new one.
+        // if more time i would implement
     // edit a trip with id , check token match supplier (this is not mandatory for assignment, might do later
 
 

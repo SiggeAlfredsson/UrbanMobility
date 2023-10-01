@@ -39,6 +39,31 @@ public class TripServiceTest {
     @Mock
     private UserService userService;
 
+
+
+    @Test
+    void verifySaveTripIfValidToken() {
+        User supplier = new User(); //idk why i dont user builder
+        supplier.setUsername("username");
+        supplier.setPassword("password");
+        supplier.setRole("SUPPLIER");
+        Trip trip = new Trip();
+
+        when(jwtService.getUsernameFromToken("validToken")).thenReturn(supplier.getUsername());
+        when(userService.findByUsername(supplier.getUsername())).thenReturn(supplier);
+
+        tripService.createTripWithToken(trip, "validToken");
+
+        verify(tripRepository).save(trip);
+    }
+    @Test
+    void createTripWithTokenThrowAuthFailedIfInvalidToken() {
+        Trip trip = new Trip();
+        assertThrows(AuthenticationFailedException.class, () -> {
+            tripService.createTripWithToken(trip, "fakeToken");
+        });
+    }
+
     @Test
     void deleteTripWithIdAndTokenThrowsEntityNotFoundIfTripNotExist() {
 

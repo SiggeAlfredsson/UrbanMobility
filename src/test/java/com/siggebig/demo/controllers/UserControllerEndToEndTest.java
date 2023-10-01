@@ -63,20 +63,7 @@ class UserControllerEndToEndTest {
 
 
     @Test
-    void getAllUsersReturnsOK() throws Exception {
-
-
-        mockMvc.perform(get("/user")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().is2xxSuccessful());
-
-    }
-
-
-
-
-    @Test
-    void getAllUsersReturnsUsers() throws Exception {
+    void getAllUsersReturnsUsersAndOk() throws Exception {
 
 
         mockMvc.perform(get("/user")

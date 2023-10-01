@@ -5,6 +5,7 @@ import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.service.TripService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class TripController {
     @Autowired
     private TripService tripService;
 
-    // create a trip
+    // create a trip with token, need to be supplier
     @PostMapping()
-    public ResponseEntity<Trip> addTrip(@RequestBody Trip trip) {
+    public ResponseEntity<Trip> addTrip(@RequestBody Trip trip, String token) {
 
         return ResponseEntity.ok(trip);
     }

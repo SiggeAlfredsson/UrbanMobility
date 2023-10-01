@@ -2,8 +2,12 @@ package com.siggebig.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 
@@ -24,20 +28,23 @@ public class Trip {
     private String departure;
     private String arrival;
     private String transportType; // ex train or bus
-    private String price;
-    private String travelCompany;
+    private int price;
+    //private String travelCompany; added a user instead, that is the company
     private int discount; // 0-100; in %
 
-    // Estimated / planned times
-    private String departureTime;
-    private String arrivalTime;
+    // Estimated / planned times . Correct like this or use localdatetime?
+    private LocalDate departureDate;
+    private LocalDate arrivalDate;
+    private LocalTime departureTime;
+    private LocalTime arrivalTime;
 
     // one trip can have many bookings, this makes it easy to add available slots left too.
     @OneToMany(mappedBy = "trip")
+    @JsonIgnoreProperties("trip")
     private List<Booking> bookings;
 
     @ManyToOne
-    @JoinColumn(name = "user_id") //maybe username? A trip is linked to a supplier(ex västtrafik)
+    @JoinColumn(name = "user_id") //A trip is linked to a supplier(ex västtrafik)
     private User user;
 
 

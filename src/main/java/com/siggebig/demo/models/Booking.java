@@ -21,6 +21,7 @@ public class Booking {
 
     // the user need to make one payment when booking a trip
     @OneToOne(mappedBy = "booking")
+    @JsonIgnoreProperties("booking")
     private Payment payment;
 
     // the booking must have one user, but the user can have many bookings

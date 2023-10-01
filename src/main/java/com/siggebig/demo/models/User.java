@@ -45,9 +45,11 @@ public class User {
 
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
     private List<Booking> bookings;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnoreProperties("user")
     private List<Trip> trips;
 
 }

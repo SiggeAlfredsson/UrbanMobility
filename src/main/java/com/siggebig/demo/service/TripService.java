@@ -39,7 +39,28 @@ public class TripService {
     public void deleteTripWithIdAndToken(long tripId, String token) {
 
 
+        String username = jwtService.getUsernameFromToken(token);
+        User user = userService.findByUsername(username);
 
+        if(user==null || username==null) {
+            throw new AuthenticationFailedException("No user found from token"); //auth failed or entitynotfound?
+        }
+
+
+        Optional<Trip> trip = findById(tripId);
+
+        if(trip.isEmpty()){
+            throw new EntityNotFoundException("No trip found with that id");
+        }
+
+        //check so token is from trip owner or a admin user
+        if (trip.get().getUser().getUsername().equals(username) || user.getRole().equals("ADMIN")) {
+            deleteWithId(tripId);
+        }
+        else {
+            throw new AuthenticationFailedException("Token is not from trip owner");
+        }
+    }
 
     }
 

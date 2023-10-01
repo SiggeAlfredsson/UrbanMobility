@@ -56,7 +56,7 @@ public class TripController {
 
 
     // delete a trip with id , check token that role is supplier and username match the creator of the trip, unless role is admin
-    @DeleteMapping("/delete")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteTripWithIdAndToken(@PathVariable("id")long tripId,@RequestHeader("JWTToken") String token) {
         try {
             tripService.deleteTripWithIdAndToken(tripId,token);

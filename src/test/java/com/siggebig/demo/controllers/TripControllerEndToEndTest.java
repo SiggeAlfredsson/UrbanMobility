@@ -1,10 +1,12 @@
 package com.siggebig.demo.controllers;
 
 
+import com.siggebig.demo.DTO.LoginDto;
 import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.TripRepository;
 import com.siggebig.demo.repository.UserRepository;
+import com.siggebig.demo.service.JwtService;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class TripControllerEndToEndTest {
 
+    //this code is not dry but i got bugs i dident have time to figure out when doing beforeeach
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -38,6 +43,9 @@ public class TripControllerEndToEndTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtService jwtService;
+
     @BeforeEach
     @Transactional
     public void setupDatabase() {
@@ -45,6 +53,297 @@ public class TripControllerEndToEndTest {
         tripRepository.deleteAll();
     }
 
+    @Test
+    void deleteTripWithIdMatchingUsernameTokenReturnsOk() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        User sj = User.builder()
+                .id(2L)
+                .username("SJ")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        userRepository.save(vasttrafik);
+        userRepository.save(sj);
+
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        Trip trip2 = Trip.builder()
+                .departure("Kungälv")
+                .arrival("Göteborg")
+                .transportType("Train")
+                .price(60)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,20))
+                .departureTime(LocalTime.of(12,0))
+                .arrivalDate(LocalDate.of(2023,10,20))
+                .arrivalTime(LocalTime.of(12,20))
+                .user(sj)
+                .build();
+
+        tripRepository.save(trip);
+        tripRepository.save(trip2);
+
+        LoginDto loginDto = LoginDto.builder()
+                        .username(sj.getUsername())
+                                .password(sj.getPassword())
+                                        .build();
+
+        String token = jwtService.getToken(loginDto);
+
+        mockMvc.perform(delete("/trip/delete/2")
+                        .header("JWTToken", token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Trip deleted successfully"));
+
+    }
+
+    @Test
+    void deleteTripWithIdAdminUserTokenReturnsOk() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        User sj = User.builder()
+                .id(2L)
+                .username("SJ")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        userRepository.save(vasttrafik);
+        userRepository.save(sj);
+
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        Trip trip2 = Trip.builder()
+                .departure("Kungälv")
+                .arrival("Göteborg")
+                .transportType("Train")
+                .price(60)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,20))
+                .departureTime(LocalTime.of(12,0))
+                .arrivalDate(LocalDate.of(2023,10,20))
+                .arrivalTime(LocalTime.of(12,20))
+                .user(sj)
+                .build();
+
+        tripRepository.save(trip);
+        tripRepository.save(trip2);
+
+        User adminUser = User.builder()
+                .username("adminuser")
+                .password("password")
+                .role("ADMIN")
+                .build();
+
+        userRepository.save(adminUser);
+
+        LoginDto loginDto = LoginDto.builder()
+                .username(adminUser.getUsername())
+                .password(adminUser.getPassword())
+                .build();
+
+        String token = jwtService.getToken(loginDto);
+
+        mockMvc.perform(delete("/trip/delete/2")
+                        .header("JWTToken", token))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Trip deleted successfully"));
+
+    }
+
+    @Test
+    void deleteTripWithIdReturns404IfInvalidId() throws Exception {
+
+        User adminUser = User.builder()
+                .username("adminuser")
+                .password("password")
+                .role("ADMIN")
+                .build();
+
+        userRepository.save(adminUser);
+
+        LoginDto loginDto = LoginDto.builder()
+                .username(adminUser.getUsername())
+                .password(adminUser.getPassword())
+                .build();
+
+        String token = jwtService.getToken(loginDto);
+
+        mockMvc.perform(delete("/trip/delete/2")
+                        .header("JWTToken", token))
+                .andExpect(status().is(404))
+                .andExpect(content().string("Trip not found"));
+
+    }
+
+    @Test
+    void deleteTripWithIdReturns401IfInvalidToken() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        User sj = User.builder()
+                .id(2L)
+                .username("SJ")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        userRepository.save(vasttrafik);
+        userRepository.save(sj);
+
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        Trip trip2 = Trip.builder()
+                .departure("Kungälv")
+                .arrival("Göteborg")
+                .transportType("Train")
+                .price(60)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,20))
+                .departureTime(LocalTime.of(12,0))
+                .arrivalDate(LocalDate.of(2023,10,20))
+                .arrivalTime(LocalTime.of(12,20))
+                .user(sj)
+                .build();
+
+        tripRepository.save(trip);
+        tripRepository.save(trip2);
+
+
+
+
+        String token = "faketoken";
+
+        mockMvc.perform(delete("/trip/delete/2")
+                        .header("JWTToken", token))
+                .andExpect(status().is(401))
+                .andExpect(content().string("Invalid token"));
+
+    }
+
+
+    @Test
+    void getTripByIdReturnsCorrectTrip() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        User sj = User.builder()
+                .id(2L)
+                .username("SJ")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+
+        userRepository.save(vasttrafik);
+        userRepository.save(sj);
+
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        Trip trip2 = Trip.builder()
+                .departure("Kungälv")
+                .arrival("Göteborg")
+                .transportType("Train")
+                .price(60)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,20))
+                .departureTime(LocalTime.of(12,0))
+                .arrivalDate(LocalDate.of(2023,10,20))
+                .arrivalTime(LocalTime.of(12,20))
+                .user(sj)
+                .build();
+
+        tripRepository.save(trip);
+        tripRepository.save(trip2);
+
+        mockMvc.perform(get("/trip/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.departure").value("Kungälv"))
+                .andExpect(jsonPath("$.arrival").value("Göteborg"))
+                .andExpect(jsonPath("$.price").value("60"))
+                .andExpect(jsonPath("$.user.username").value("SJ"))
+                .andExpect(jsonPath("$.id").value(2));
+    }
+
+    @Test
+    void getUserByIdReturns204IfUserNotFound() throws Exception {
+
+        mockMvc.perform(get("/trip/66")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(204))
+                .andExpect(header().string("x-info", "No trip with that id"));
+    }
 
 
     @Test

@@ -21,8 +21,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserRepository userRepository;
+
 
     @GetMapping()
     public ResponseEntity<List<User>> getAllUsers () {
@@ -43,7 +42,6 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<Optional<User>> getUserById (@PathVariable("id") long userId) {
         Optional<User> user = userService.findById(userId);
-
         if (user.isEmpty()) {
             return ResponseEntity.status(204).header("x-info", "No user with that id").build();
         } else {
@@ -76,10 +74,8 @@ public class UserController {
         try {
             userService.deleteUserWithToken(token);
         } catch (EntityNotFoundException e) {
-            // 404
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-
 
         return ResponseEntity.ok("User deleted successfully");
     }
@@ -89,13 +85,13 @@ public class UserController {
 
 
         try {
-            if(updatedUser==null) {
+            if(updatedUser==null || token==null) {
                 throw new EntityNotFoundException("No new info");
             } else {
                 userService.updateUserWithToken(updatedUser, token);
             }
         } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().header("x-info", "Invalid data, check new info or token").build();
+            return ResponseEntity.badRequest().header("x-info", "Invalid data, check new info or token").build(); //would be nice to have one for each
         }
 
 

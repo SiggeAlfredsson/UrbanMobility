@@ -8,6 +8,7 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -42,6 +43,13 @@ public class Trip {
     @OneToMany(mappedBy = "trip")
     @JsonIgnoreProperties("trip")
     private List<Booking> bookings;
+
+    public void addBooking(Booking booking) {
+        if (bookings == null) {
+            bookings = new ArrayList<>();
+        }
+        bookings.add(booking);
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id") //A trip is linked to a supplier(ex västtrafik)

@@ -16,6 +16,7 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
+
     //add booking
     @PostMapping("/{id}")
     public ResponseEntity<Booking> createBooking (@PathVariable("id")Long tripId, @RequestHeader("JWTToken")String token) {
@@ -29,7 +30,11 @@ public class BookingController {
     }
 
     //remove booking
-    @DeleteMapping("/{id}")
-    public ResponseEntity
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<String> deleteBooking (@PathVariable("id")long bookingId, @RequestHeader("JWTToken")String token) {
+//
+//
+//
+//    }
 
 }

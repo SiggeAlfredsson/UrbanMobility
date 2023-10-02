@@ -30,25 +30,34 @@ public class BookingService {
 
         String username = jwtService.getUsernameFromToken(token);
         User user = userService.findByUsername(username);
-        Optional<Trip> trip = tripService.findById(tripId);
+        Optional<Trip> tripOptional = tripService.findById(tripId);
 
-        if(username==null || user==null || trip.isEmpty()) {
+        if(username==null || user==null || tripOptional.isEmpty()) {
             throw new EntityNotFoundException("Entity not found");
         }
 
-        Booking booking = new Booking();
-        booking.setUser(user);
-        trip.ifPresent(booking::setTrip); // it is always present... optional......
+        Trip trip = tripOptional.get();
 
+        //way to much logic here
+
+        Booking booking = new Booking();
+        booking.setTrip(trip);
         Payment payment = new Payment();
-        payment.setBooking(booking);
         Date date = Calendar.getInstance().getTime();
         payment.setDate(date);
-        double finalAmount = trip.get().getPrice() * (1-(trip.get().getDiscount()));
+        double finalAmount = trip.getPrice() * (1-(trip.getDiscount()));
         payment.setAmount(finalAmount);
-        booking.setPayment(payment);
 
+        payment.setBooking(booking);
+        booking.setPayment(payment);
+        booking.setUser(user);
         userService.save(user);
+
+
+        trip.addBooking(booking);
+        tripService.save(trip);
+
+
 
         return booking;
 

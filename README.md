@@ -19,3 +19,5 @@ To create build steps in a ssh server looks a little different,
 ![74caae8dd49c25810060b6296dad5ffa](https://github.com/SiggeAlfredsson/UrbanMobility/assets/113336400/de47528d-9fc3-4e4a-8ad4-736fa8add28b)
 
 But it works just the same as previus build steps, I wanted to add a Post-build Action to push the testing branch into main if succeeds, but I never got it to work.
+
+My EC2 server has Java 17 and Maven installed.

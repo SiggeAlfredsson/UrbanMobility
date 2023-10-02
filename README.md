@@ -23,6 +23,7 @@ If build is successful, it means the tests have passed locally.
 
 One requirement was to run the tests in a ubuntu environment, Instead of going with docker (tested that also) I wanted to try to set up a EC2 instance.
 I set up a ubuntu 22.04 LTS Server.
+Im looking to learn a little more about working and delploying to cloud servers, hope it is OK.
 It was a little tricky to connect it with jenkins and set up a pipeline,
 
 I made jenkins connect to the server via ssh and a pem key which i added into my jenkins credentials.

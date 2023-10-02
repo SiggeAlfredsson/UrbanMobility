@@ -76,5 +76,23 @@ public class TripService {
         }
 
     }
+
+    public Trip updateTripWithToken(Trip trip, String token) {
+        String username = jwtService.getUsernameFromToken(token);
+        User user = userService.findByUsername(username);
+
+        if(username==null || user==null) {
+            throw new AuthenticationFailedException("wrong token ay");
+        }
+
+        if(user.getRole().equals("ADMIN")){
+            save(trip);
+            return trip;
+        } else if (!trip.getUser().getUsername().equals(user.getUsername())) {
+            throw new AuthenticationFailedException("User dont match user");
+        }
+        save(trip);
+        return trip;
+    }
 }
 

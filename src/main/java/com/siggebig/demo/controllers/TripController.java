@@ -75,14 +75,17 @@ public class TripController {
 
 
     // edit a trip with id , check token match supplier
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Trip> updateTripWithIdAndToken(@PathVariable("id")long tripId,@RequestHeader("JWTToken")String token) {
+    @PutMapping("/update")
+    public ResponseEntity<Trip> updateTripWithToken(@RequestBody Trip trip,@RequestHeader("JWTToken")String token) {
 
-        Trip trip = new Trip();
+        try {
+            tripService.updateTripWithToken(trip,token);
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.status(400).header("x-info", "Auth failed").build();
+        }
 
         return ResponseEntity.ok(trip);
+
     }
-
-
 
 }

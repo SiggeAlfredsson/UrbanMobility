@@ -58,6 +58,88 @@ public class TripControllerEndToEndTest {
     }
 
     @Test
+    void updateTripWithTokenReturns400IfAuthFailed() throws Exception {
+
+        Trip trip = new Trip();
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        String tripJson = mapper.writeValueAsString(trip);
+
+
+        mockMvc.perform(put("/trip/update")
+                        .header("JWTToken", "invalidtoken")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tripJson))
+                .andExpect(status().is(400))
+                .andExpect(header().string("x-info", "Auth failed"));
+
+
+    }
+
+    @Test
+    void updateTripWithTokenReturnsUpdatedTrip() throws Exception {
+        User vasttrafik = User.builder()
+                .id(1L)
+                .username("VästTrafik")
+                .password("password")
+                .email("fake@mail.com")
+                .role("SUPPLIER")
+                .build();
+        userRepository.save(vasttrafik);
+        Trip trip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(100)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        tripRepository.save(trip);
+
+        Trip updatedTrip = Trip.builder()
+                .departure("Uddevalla")
+                .arrival("Vänersborg")
+                .transportType("Bus")
+                .price(120)
+                .discount(10)
+                .departureDate(LocalDate.of(2023, 10,22))
+                .departureTime(LocalTime.of(22,0))
+                .arrivalDate(LocalDate.of(2023,10,22))
+                .arrivalTime(LocalTime.of(22,30))
+                .user(vasttrafik)
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule()); // jackson?
+        String tripJson = mapper.writeValueAsString(updatedTrip);
+
+        LoginDto loginDto = LoginDto.builder()
+                .username(vasttrafik.getUsername())
+                .password(vasttrafik.getPassword())
+                .build();
+
+        String token = jwtService.getToken(loginDto);
+
+
+
+        mockMvc.perform(put("/trip/update")
+                        .header("JWTToken", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(tripJson))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.departure").value("Uddevalla"))
+                .andExpect(jsonPath("$.arrival").value("Vänersborg"))
+                .andExpect(jsonPath("$.price").value("120")) // new info
+                .andExpect(jsonPath("$.user.username").value("VästTrafik"));
+    }
+
+    @Test
     void createTripWithInvalidTokenReturns400() throws Exception {
         Trip trip = new Trip();
         String fakeToken = "skraap pappap";

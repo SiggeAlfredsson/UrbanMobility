@@ -40,6 +40,30 @@ public class TripServiceTest {
     private UserService userService;
 
 
+    @Test
+    void updateTripWithTokenThrowsAuthFailedExcIfInvalidToken() {
+        Trip trip = new Trip();
+        assertThrows(AuthenticationFailedException.class, () -> {
+            tripService.createTripWithToken(trip, "fakeToken");
+        });
+    }
+
+    @Test
+    void verifyUpdateTripIfValidToken() {
+        User supplier = new User(); //idk why i dont user builder
+        supplier.setUsername("username");
+        supplier.setPassword("password");
+        supplier.setRole("SUPPLIER");
+        Trip trip = new Trip();
+        trip.setUser(supplier);
+
+        when(jwtService.getUsernameFromToken("validToken")).thenReturn(supplier.getUsername());
+        when(userService.findByUsername(supplier.getUsername())).thenReturn(supplier);
+
+        tripService.updateTripWithToken(trip, "validToken");
+
+        verify(tripRepository).save(trip);
+    }
 
     @Test
     void verifySaveTripIfValidToken() {

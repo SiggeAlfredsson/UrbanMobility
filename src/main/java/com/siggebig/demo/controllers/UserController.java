@@ -89,7 +89,7 @@ public class UserController {
 
         try {
             if(updatedUser==null || token==null) {
-                throw new EntityNotFoundException("No new info");
+                throw new EntityNotFoundException("No new info / bad token");
             } else {
                 userService.updateUserWithToken(updatedUser, token);
             }

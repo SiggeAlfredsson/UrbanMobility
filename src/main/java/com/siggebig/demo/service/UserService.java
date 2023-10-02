@@ -91,34 +91,17 @@ public class UserService {
 
             User orgUser = findByUsername(username);
 
-            if (newInfo.getUsername()==null){
-                newInfo.setUsername(orgUser.getUsername());
-            }
-
-            if (newInfo.getPassword()==null){
-                newInfo.setPassword(orgUser.getPassword());
-            }
-
-            if (newInfo.getEmail()==null){
-                newInfo.setEmail(orgUser.getEmail());
-            }
-
-            if (newInfo.getPhoneNumber()==null){
-                newInfo.setPhoneNumber(orgUser.getPhoneNumber());
-            }
-
-            if (newInfo.getPaymentMethod()==null){
-                newInfo.setPaymentMethod(orgUser.getPaymentMethod());
-            }
-
             // cant change id
             newInfo.setId(orgUser.getId());
 
             //cant change role
             newInfo.setRole(orgUser.getRole());
 
-            // should not be able to update bookings here
+            // should not be able to update bookings here?
             newInfo.setBookings(orgUser.getBookings());
+
+            // cant edit trips?
+            newInfo.setTrips(orgUser.getTrips());
 
 
 

@@ -60,7 +60,7 @@ class UserServiceTest {
 
 
 
-    // IDK bout these 2
+
     @Test
     void updateUserByTokenWorks() {
 
@@ -69,11 +69,14 @@ class UserServiceTest {
                 .username("fakeuser")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
 
 
         User userNewInfo = User.builder()
                 .username("newusername")
+                .password("password")
+                .email("fake@mail.com")
                 .build();
 
 
@@ -87,38 +90,10 @@ class UserServiceTest {
         assertEquals(userOldInfo.getId(), updatedUser.getId());
         assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
         assertEquals("newusername",updatedUser.getUsername());
+        assertEquals(userOldInfo.getRole(), updatedUser.getRole());
 
     }
 
-    @Test
-    void updateUserWithTokenWhenUsernameIsNull() {
-
-        Long userId = 1L;
-
-        User userOldInfo = User.builder()
-                .id(userId)
-                .username("fakeuser")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-
-
-        User userNewInfo = User.builder()
-                .password("newpassword")
-                .build();
-
-        when(jwtService.getUsernameFromToken("token")).thenReturn(userOldInfo.getUsername());
-        when(userRepository.findByUsername(userOldInfo.getUsername())).thenReturn(userOldInfo);
-        when(userRepository.save(any(User.class))).thenReturn(userNewInfo);
-
-        User updatedUser = userService.updateUserWithToken( userNewInfo, "token");
-
-        assertEquals(userOldInfo.getId(), updatedUser.getId());
-        assertEquals(userOldInfo.getEmail(), updatedUser.getEmail());
-        assertEquals("newpassword",updatedUser.getPassword());
-
-
-    }
 
     @Test
     void updateUserByIdThrowsAuthFailedExcWhenAuthIsFalse() {

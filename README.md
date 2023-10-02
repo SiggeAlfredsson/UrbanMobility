@@ -7,6 +7,8 @@
 
 - I was big time sick during this project, most of the project was made in the last 3 days.
 
+- Are my EndToEnd tests actully integration tests?
+
 
 --- RUNNING TESTS ---
  

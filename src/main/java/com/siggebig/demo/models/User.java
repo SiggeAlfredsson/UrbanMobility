@@ -39,7 +39,7 @@ public class User {
     private String paymentMethod; // ?? swish
     private int paymentNumber; // swish number
 
-     //@Enumerated(EnumType.STRING)
+     //@Enumerated(EnumType.STRING) never got it to work with enums
     private String role;
 
 

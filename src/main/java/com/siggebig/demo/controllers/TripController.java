@@ -73,9 +73,15 @@ public class TripController {
     }
 
 
-        // putmapping not required for assignment, supplier can just delete a trip and make a new one.
-        // if more time i would implement
-    // edit a trip with id , check token match supplier (this is not mandatory for assignment, might do later
+
+    // edit a trip with id , check token match supplier
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Trip> updateTripWithIdAndToken(@PathVariable("id")long tripId,@RequestHeader("JWTToken")String token) {
+
+        Trip trip = new Trip();
+
+        return ResponseEntity.ok(trip);
+    }
 
 
 

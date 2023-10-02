@@ -36,36 +36,36 @@ public class BookingService {
     private PaymentRepository paymentRepository;
 
 //this was confusing as hell...
-    public Booking createBookingWithTokenAndId(Long tripId, String token) {
+public Booking createBookingWithTokenAndId(Long tripId, String token) {
 
-        String username = jwtService.getUsernameFromToken(token);
-        User user = userService.findByUsername(username);
-        Optional<Trip> tripOptional = tripService.findById(tripId);
+    String username = jwtService.getUsernameFromToken(token);
+    User user = userService.findByUsername(username);
+    Optional<Trip> tripOptional = tripService.findById(tripId);
 
-        if(username==null || user==null || tripOptional.isEmpty()) {
-            throw new EntityNotFoundException("Entity not found");
-        }
-
-        Trip trip = tripOptional.get();
-
-        Payment payment = Payment.builder()
-                .amount(trip.getPrice()-(trip.getPrice() * ((double) trip.getDiscount() / 100)))
-                .date(Calendar.getInstance().getTime())
-                .build();
-
-        Booking booking = Booking.builder()
-                .user(user)
-                .trip(trip)
-                .payment(payment)
-                .build();
-
-        paymentRepository.save(payment);
-        bookingRepository.save(booking);
-
-
-
-        return booking;
+    if(username==null || user==null || tripOptional.isEmpty()) {
+        throw new EntityNotFoundException("Entity not found");
     }
+
+    Trip trip = tripOptional.get();
+
+    Payment payment = Payment.builder()
+            .amount(trip.getPrice()-(trip.getPrice() * ((double) trip.getDiscount() / 100)))
+            .date(Calendar.getInstance().getTime())
+            .build();
+
+    Booking booking = Booking.builder()
+            .user(user)
+            .trip(trip)
+            .payment(payment)
+            .build();
+
+    paymentRepository.save(payment);
+    bookingRepository.save(booking);
+
+
+
+    return booking;
+}
 
 
     public void deleteBookingByIdAndToken(long bookingId, String token) {

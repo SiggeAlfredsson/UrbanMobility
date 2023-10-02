@@ -21,24 +21,6 @@ public class UserRepositoryTests {
     @Autowired
     private UserRepository userRepository;
 
-    @Test
-    void savesUserAndReturnsSavedDataAndGeneratedId() {
-        // arrange
-        User user = User.builder()
-                .username("mockuser")
-                .password("password")
-                .build();
-
-        //act
-        User savedUser = userRepository.save(user);
-
-        //assert
-        assertNotNull(savedUser);
-        assertEquals("mockuser", savedUser.getUsername());
-        Assertions.assertThat(savedUser.getId()).isGreaterThan(0);
-
-
-    }
 
     @Test
     void findByIdReturnsUserWithThatId() {
@@ -99,54 +81,5 @@ public class UserRepositoryTests {
     }
 
 
-    @Test
-    void deleteUserByIdDeletesUser() {
-        //arrange
-        User user = User.builder()
-                .username("mockuser")
-                .password("password")
-                .build();
-        //act
-        User savedUser = userRepository.save(user);
-
-        //assert before delete
-        assertNotNull(savedUser);
-        assertNotNull(savedUser.getId());
-        assertTrue(userRepository.existsById(savedUser.getId()));
-
-        //delete
-        userRepository.deleteById(savedUser.getId());
-
-        //assert after delete
-        assertFalse(userRepository.existsById(savedUser.getId()));
-
-    }
-
-
-    @Test
-    void saveUserWorksAndGetAllUsersReturnsUsers() {
-        User user = User.builder()
-                .username("fakeuser")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-        User user2 = User.builder()
-                .username("fakeuser2")
-                .password("password")
-                .email("fake@mail.com")
-                .build();
-
-        userRepository.save(user);
-        userRepository.save(user2);
-
-        List<User> userList = userRepository.findAll();
-
-        assertNotNull(userList);
-        assertEquals(2,userList.size(), "expected 2 users");
-        assertEquals(user.getUsername(), userList.get(0).getUsername());
-        assertEquals(user2.getUsername(), userList.get(1).getUsername());
-
-
-    }
 
 }

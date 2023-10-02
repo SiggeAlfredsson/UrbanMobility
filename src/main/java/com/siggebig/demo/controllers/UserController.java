@@ -24,14 +24,9 @@ public class UserController {
 
     //create user is in authcontroller
 
-
-
     @GetMapping()
-    public ResponseEntity<List<User>> getAllUsers () {
-        //this returns passwords to?...
-
+    public ResponseEntity<List<User>> getAllUsers () {   //this returns passwords to?...
         List<User> users = userService.getAllUsers();
-
         if(users.isEmpty()) {
             return ResponseEntity
                     .status(204)
@@ -41,7 +36,6 @@ public class UserController {
             return ResponseEntity.ok(users);
         }
     }
-
     @GetMapping("/{id}")
     public ResponseEntity<Optional<User>> getUserById (@PathVariable("id") long userId) {
         Optional<User> user = userService.findById(userId);
@@ -70,8 +64,6 @@ public class UserController {
 //        return ResponseEntity.ok("User deleted successfully");
 //
 //    }
-
-
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteUserWithToken(@RequestHeader("JWTToken") String token) {
         try {
@@ -79,14 +71,10 @@ public class UserController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
         }
-
         return ResponseEntity.ok("User deleted successfully");
     }
-
     @PutMapping("/update")
     public ResponseEntity<User> updateUserWithToken(@RequestBody User updatedUser, @RequestHeader("JWTToken") String token) {
-
-
         try {
             if(updatedUser==null || token==null) {
                 throw new EntityNotFoundException("No new info / bad token");
@@ -96,10 +84,6 @@ public class UserController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.badRequest().header("x-info", "Invalid data, check new info or token").build(); //would be nice to have one for each
         }
-
         return ResponseEntity.ok().body(updatedUser);
     }
-
-
-
 }

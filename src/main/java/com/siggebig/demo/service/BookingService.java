@@ -5,6 +5,8 @@ import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.models.Payment;
 import com.siggebig.demo.models.Trip;
 import com.siggebig.demo.models.User;
+import com.siggebig.demo.repository.BookingRepository;
+import com.siggebig.demo.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +28,13 @@ public class BookingService {
     @Autowired
     private TripService tripService;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
+
+//this was confusing as hell...
     public Booking createBookingWithTokenAndId(Long tripId, String token) {
 
         String username = jwtService.getUsernameFromToken(token);
@@ -38,29 +47,26 @@ public class BookingService {
 
         Trip trip = tripOptional.get();
 
-        //way to much logic here
+        Payment payment = Payment.builder()
+                .amount(trip.getPrice()-(trip.getPrice() * ((double) trip.getDiscount() / 100)))
+                .date(Calendar.getInstance().getTime())
+                .build();
 
-        Booking booking = new Booking();
-        booking.setTrip(trip);
-        Payment payment = new Payment();
-        Date date = Calendar.getInstance().getTime();
-        payment.setDate(date);
-        double finalAmount = trip.getPrice() * (1-(trip.getDiscount()));
-        payment.setAmount(finalAmount);
+        Booking booking = Booking.builder()
+                .user(user)
+                .trip(trip)
+                .payment(payment)
+                .build();
 
-        payment.setBooking(booking);
-        booking.setPayment(payment);
-        booking.setUser(user);
-        userService.save(user);
-
-
-        trip.addBooking(booking);
-        tripService.save(trip);
+        paymentRepository.save(payment);
+        bookingRepository.save(booking);
 
 
 
         return booking;
-
-
     }
+
+
+
+
 }

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 // a trip is something a supplier can make, like västtrafik can add a buss ride
@@ -39,20 +40,16 @@ public class Trip {
     private LocalTime departureTime;
     private LocalTime arrivalTime;
 
-    // one trip can have many bookings, this makes it easy to add available slots left too.
-    @OneToMany(mappedBy = "trip")
-    @JsonIgnoreProperties("trip")
-    private List<Booking> bookings;
+    // one trip can have many bookings, this makes it easy to add available slots left too. this broke the app
+//    @OneToMany(mappedBy = "trip")
+//    @JsonIgnoreProperties("booking")
+//    private Set<Booking> bookings;
 
-    public void addBooking(Booking booking) {
-        if (bookings == null) {
-            bookings = new ArrayList<>();
-        }
-        bookings.add(booking);
-    }
+
 
     @ManyToOne
     @JoinColumn(name = "user_id") //A trip is linked to a supplier(ex västtrafik)
+    @JsonIgnoreProperties("user")
     private User user;
 
 

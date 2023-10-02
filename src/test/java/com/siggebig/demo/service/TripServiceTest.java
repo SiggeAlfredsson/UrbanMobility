@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 
@@ -49,6 +50,65 @@ public class TripServiceTest {
     }
 
     @Test
+    void updateTripWithTokenThrowsAuthFailedExcIfTokenDontMatch() {
+        User user = User.builder()
+                .username("user")
+                .password("pass")
+                .role("USER")
+                .build();
+
+
+        User supplier = User.builder()
+                .username("notuser")
+                .password("pass")
+                .build();
+
+        Trip trip = Trip.builder()
+                .user(supplier)
+                .build();
+
+
+        when(jwtService.getUsernameFromToken("validToken")).thenReturn(user.getUsername());
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+
+
+
+        assertThrows(AuthenticationFailedException.class, () -> {
+            tripService.updateTripWithToken(trip, "validToken");
+        });
+    }
+
+    @Test
+    void updateTripWithTokenVerifySaveIfUserIsAdmin() {
+        User user = User.builder()
+                .username("user")
+                .password("pass")
+                .role("ADMIN")
+                .build();
+
+
+        User supplier = User.builder()
+                .username("notuser")
+                .password("pass")
+                .build();
+
+        Trip trip = Trip.builder()
+                .user(supplier)
+                .build();
+
+
+        when(jwtService.getUsernameFromToken("validToken")).thenReturn(user.getUsername());
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+
+        Trip trip1 = tripService.updateTripWithToken(trip, "validToken");
+
+        assertNotNull(trip1);
+        verify(tripRepository).save(trip);
+
+
+    }
+
+    @Test
     void verifyUpdateTripIfValidToken() {
         User supplier = new User(); //idk why i dont user builder
         supplier.setUsername("username");
@@ -60,8 +120,9 @@ public class TripServiceTest {
         when(jwtService.getUsernameFromToken("validToken")).thenReturn(supplier.getUsername());
         when(userService.findByUsername(supplier.getUsername())).thenReturn(supplier);
 
-        tripService.updateTripWithToken(trip, "validToken");
+        Trip trip1 = tripService.updateTripWithToken(trip, "validToken");
 
+        assertNotNull(trip1);
         verify(tripRepository).save(trip);
     }
 

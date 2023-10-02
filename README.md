@@ -37,3 +37,9 @@ To create build steps in a ssh server looks a little different,
 But it works just the same as previus build steps, I wanted to add a Post-build Action to push the testing branch into main if succeeds, but I never got it to work.
 
 My EC2 server has Java 17 and Maven installed.
+
+
+The only stress test I've done is with a simple python script.
+
+
+![85a13e59dca29c55ef70c19cb0d572bf](https://github.com/SiggeAlfredsson/UrbanMobility/assets/113336400/c800a58b-f669-44e2-bf21-9e4f27321ae9)

@@ -49,6 +49,7 @@ public class UserRepositoryTests {
                 .id(3L)
                 .username("mockuser")
                 .password("password")
+                .role("USER")
                 .build();
 
         assertFalse(userRepository.existsById(user.getId()));
@@ -67,6 +68,7 @@ public class UserRepositoryTests {
         User user = User.builder()
                 .username("mockuser")
                 .password("password")
+                .role("USER")
                 .build();
 
         assertFalse(userRepository.existsByUsername(user.getUsername()));

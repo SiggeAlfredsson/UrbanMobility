@@ -23,6 +23,8 @@ import java.util.Set;
 @Table(name = "trips")
 public class Trip {
 
+    //pretty much every column here could be notblank but I choose my sanity over writing tests like that.
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;

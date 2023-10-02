@@ -40,6 +40,7 @@ public class User {
     private int paymentNumber; // swish number
 
      //@Enumerated(EnumType.STRING) never got it to work with enums
+     @NotBlank // i want this to only be enum, but if it can be blank it can throw nullpointerexception and that we dont want
     private String role;
 
 

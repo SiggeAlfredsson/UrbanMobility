@@ -67,6 +67,7 @@ class UserControllerEndToEndTest {
                 .username("user1")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
         User user2 = User.builder()
                 .id(2L)
@@ -105,6 +106,7 @@ class UserControllerEndToEndTest {
                 .username("user1")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
         User user2 = User.builder()
                 .username("fakeuser")
@@ -185,6 +187,7 @@ class UserControllerEndToEndTest {
                 .username("user1")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
         User user2 = User.builder()
                 .id(2L)
@@ -199,6 +202,7 @@ class UserControllerEndToEndTest {
         User newInfo = User.builder()
                 .username("newusername")
                 .password("newpassword")
+                .role("USER")
                 .build();
 
         //convert object user to JSON
@@ -231,6 +235,9 @@ class UserControllerEndToEndTest {
     void updateUserWithTokenReturns400IfEntityNotFound() throws Exception {
 
         User user = new User();
+        user.setUsername("x");
+        user.setPassword("x");
+        user.setRole("USER");
 
         //convert object user to JSON, if no user then request fails and returns 400 without custom header
         ObjectMapper mapper = new ObjectMapper();
@@ -242,6 +249,24 @@ class UserControllerEndToEndTest {
                 .content(userJson))
                 .andExpect(status().is(400))
                 .andExpect(header().string("x-info", "Invalid data, check new info or token"));
+    }
+
+    @Test
+    void updateUserWithTokenReturns400IfInvalidUserInput() throws Exception {
+
+        User user = new User();
+
+
+        //convert object user to JSON, if no user then request fails and returns 400 without custom header
+        ObjectMapper mapper = new ObjectMapper();
+        String userJson = mapper.writeValueAsString(user);
+
+        mockMvc.perform(put("/user/update")
+                        .header("JWTToken", "token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(userJson))
+                .andExpect(status().is(400))
+                .andExpect(header().string("x-info", "Invalid data, check inputs"));
 
 
     }

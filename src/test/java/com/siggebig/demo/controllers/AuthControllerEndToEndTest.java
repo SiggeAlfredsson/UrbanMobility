@@ -63,6 +63,7 @@ class AuthControllerEndToEndTest {
                 .id(1L)
                 .username("username")
                 .password("password")
+                .role("USER")
                 .email("fake@mail.com")
                 .build();
 
@@ -93,6 +94,7 @@ class AuthControllerEndToEndTest {
                 .username("username")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
 
         userRepository.save(user);
@@ -120,6 +122,7 @@ class AuthControllerEndToEndTest {
         User user = User.builder()
                 .username("fakeuser")
                 .password("password")
+                .role("USER")
                 .build();
 
         //convert object user to JSON
@@ -164,6 +167,7 @@ class AuthControllerEndToEndTest {
                 .username("username")
                 .password("password")
                 .email("fake@mail.com")
+                .role("USER")
                 .build();
 
         userRepository.save(user2);

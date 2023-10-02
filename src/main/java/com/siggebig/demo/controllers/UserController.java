@@ -5,10 +5,12 @@ import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.User;
 import com.siggebig.demo.repository.UserRepository;
 import com.siggebig.demo.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,7 +76,11 @@ public class UserController {
         return ResponseEntity.ok("User deleted successfully");
     }
     @PutMapping("/update")
-    public ResponseEntity<User> updateUserWithToken(@RequestBody User updatedUser, @RequestHeader("JWTToken") String token) {
+    public ResponseEntity<User> updateUserWithToken(@Valid @RequestBody User updatedUser, BindingResult result, @RequestHeader("JWTToken") String token) {
+
+        if(result.hasErrors()) {
+            return ResponseEntity.badRequest().header("x-info", "Invalid data, check inputs").build();        }
+
         try {
             if(updatedUser==null || token==null) {
                 throw new EntityNotFoundException("No new info / bad token");

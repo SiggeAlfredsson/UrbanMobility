@@ -6,7 +6,7 @@ FROM ubuntu:20.04
 
 # Update and install necessary packages
 RUN apt-get update -y \
-    && apt-get install -y openjdk-11-jdk maven
+    && apt-get install -y openjdk-17-jdk maven
 
 # Set the working directory inside the container
 WORKDIR /app

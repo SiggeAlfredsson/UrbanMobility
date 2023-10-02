@@ -70,7 +70,7 @@ class AuthControllerEndToEndTest {
 
         LoginDto loginDto = LoginDto.builder()
                 .username("username")
-                .password("wpassword")
+                .password("password")
                 .build();
 
         //convert object creds to JSON

@@ -8,7 +8,7 @@ build steps:
 2 - .mvnw package
 If build is successful, it means the tests have passed locally.
 
-One requirement was to run the tests in a ubuntu environment, Instead of going with docker I wanted to try to set up a EC2 instance.
+One requirement was to run the tests in a ubuntu environment, Instead of going with docker (tested that also) I wanted to try to set up a EC2 instance.
 I set up a ubuntu 22.04 LTS Server.
 It was a little tricky to connect it with jenkins and set up a pipeline,
 

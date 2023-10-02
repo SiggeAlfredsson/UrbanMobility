@@ -1,5 +1,15 @@
 # Spring boot assignment with focus on writing tests
 
+- getting a booking broken? In the booking I get the user, and in the user I get the bookings again, and agian, and again, only reason the test passes is because it is not so much data. Would look into more of it if I werent so short on time
+
+
+- I feel like i alot of logic way more complicated then it had to be, and then I still removed quite alot of logic in UserService.
+
+- I was big time sick during this project, most of the project was made in the last 3 days.
+
+
+--- RUNNING TESTS ---
+ 
  Running test locally thru jenkins:
 
 Enter git repo URL in Source code management and branch to build, in my case testing.

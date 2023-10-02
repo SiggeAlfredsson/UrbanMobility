@@ -1,5 +1,5 @@
 # Use an official Ubuntu runtime as a parent image
-FROM ubuntu:22:10
+FROM ubuntu:22:04
 
 # Set environment variables for non-interactive installation of packages
 #ENV DEBIAN_FRONTEND=noninteractive

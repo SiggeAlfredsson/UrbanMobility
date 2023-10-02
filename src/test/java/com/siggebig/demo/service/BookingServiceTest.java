@@ -1,5 +1,7 @@
 package com.siggebig.demo.service;
 
+import com.siggebig.demo.Exception.AuthenticationFailedException;
+import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.controllers.BookingController;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.models.Payment;
@@ -17,8 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -75,5 +76,116 @@ class BookingServiceTest {
         verify(paymentRepository).save(any(Payment.class));
         verify(bookingRepository).save(any(Booking.class));
     }
+
+
+  @Test
+    void deleteByIdAndTokenThrowsEntityNotFoundIfNoTripExistWithThatId() {
+      assertThrows(EntityNotFoundException.class, () -> {
+          bookingService.deleteBookingByIdAndToken(3234L,"token");
+      });
+  }
+
+    @Test
+    void deleteByIdAndTokenThrowsAuthFailedIfUsernameDontMatch() {
+
+
+
+        User user = User.builder()
+                .username("user")
+                .password("pass")
+                .role("USER")
+                .build();
+
+        User user2 = User.builder()
+                .username("user2")
+                .password("pass")
+                .build();
+
+
+
+        Booking booking = new Booking();
+        booking.setUser(user2);
+        booking.setId(3234L);
+
+        when(bookingRepository.findById(3234L)).thenReturn(Optional.of(booking));
+        when(jwtService.getUsernameFromToken("token")).thenReturn(user.getUsername());
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+
+
+        assertThrows(AuthenticationFailedException.class, () -> {
+            bookingService.deleteBookingByIdAndToken(3234L,"token");
+        });
+    }
+
+    @Test
+    void deleteByIdAndTokenThrowsAuthFailedNoUserFromToken() {
+        User user2 = User.builder()
+                .username("user2")
+                .password("pass")
+                .build();
+        Booking booking = new Booking();
+        booking.setUser(user2);
+        booking.setId(3234L);
+
+        when(bookingRepository.findById(3234L)).thenReturn(Optional.of(booking));
+
+        assertThrows(AuthenticationFailedException.class, () -> {
+            bookingService.deleteBookingByIdAndToken(3234L,"token");
+        });
+    }
+
+    @Test
+    void verifyDeleteIfUsernameMatchWithIdAndToken() {
+        User user = User.builder()
+                .username("user")
+                .password("pass")
+                .role("USER")
+                .build();
+
+        Booking booking = new Booking();
+        booking.setUser(user);
+        booking.setId(3234L);
+
+        when(bookingRepository.findById(3234L)).thenReturn(Optional.of(booking));
+        when(jwtService.getUsernameFromToken("token")).thenReturn(user.getUsername());
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+
+        bookingService.deleteBookingByIdAndToken(3234L,"token");
+
+        verify(bookingRepository).deleteById(3234L);
+
+
+    }
+
+    @Test
+    void deleteByIdAndTokenIfUsernameDontMatchButAdminVerifyDelete() {
+
+        User user = User.builder()
+                .username("user")
+                .password("pass")
+                .role("ADMIN")
+                .build();
+
+        User user2 = User.builder()
+                .username("user2")
+                .password("pass")
+                .build();
+
+
+        Booking booking = new Booking();
+        booking.setUser(user2);
+        booking.setId(3234L);
+
+        when(bookingRepository.findById(3234L)).thenReturn(Optional.of(booking));
+        when(jwtService.getUsernameFromToken("token")).thenReturn(user.getUsername());
+        when(userService.findByUsername(user.getUsername())).thenReturn(user);
+
+
+        bookingService.deleteBookingByIdAndToken(3234L,"token");
+
+        verify(bookingRepository).deleteById(3234L);
+    }
+
+
 
 }

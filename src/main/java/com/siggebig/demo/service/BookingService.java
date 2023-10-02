@@ -1,5 +1,6 @@
 package com.siggebig.demo.service;
 
+import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.models.Payment;
@@ -67,6 +68,30 @@ public class BookingService {
     }
 
 
+    public void deleteBookingByIdAndToken(long bookingId, String token) {
+        Optional<Booking> optBooking = bookingRepository.findById(bookingId);
+        String username = jwtService.getUsernameFromToken(token);
+        User user = userService.findByUsername(username);
+
+        if(optBooking.isEmpty()) {
+            throw new EntityNotFoundException("no trip with that id");
+        }
+
+        if(username==null) {
+            throw new AuthenticationFailedException("check token");
+        }
+
+        Booking booking = optBooking.get();
+
+        if (booking.getUser().getUsername().equals(username)){
+            bookingRepository.deleteById(bookingId);
+        } else if (user.getRole().equals("ADMIN")) {
+            bookingRepository.deleteById(bookingId);
+        } else {
+            throw new AuthenticationFailedException("Not your booking");
+        }
 
 
+
+    }
 }

@@ -1,6 +1,7 @@
 package com.siggebig.demo.controllers;
 
 
+import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.service.BookingService;
@@ -30,11 +31,16 @@ public class BookingController {
     }
 
     //remove booking
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<String> deleteBooking (@PathVariable("id")long bookingId, @RequestHeader("JWTToken")String token) {
-//
-//
-//
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteBooking (@PathVariable("id")long bookingId, @RequestHeader("JWTToken")String token) {
+        try {
+            bookingService.deleteBookingByIdAndToken(bookingId,token);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(404).body("No booking with that id");
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Token");
+        }
+        return ResponseEntity.ok().body("Booking deleted");
+    }
 
 }

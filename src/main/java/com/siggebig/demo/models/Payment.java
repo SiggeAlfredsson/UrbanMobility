@@ -22,7 +22,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private int amount;
+    private double amount;
     private Date date;
 
     @OneToOne

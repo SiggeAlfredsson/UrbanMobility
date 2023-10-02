@@ -1,19 +1,35 @@
 package com.siggebig.demo.controllers;
 
 
-import org.springframework.web.bind.annotation.RestController;
+import com.siggebig.demo.Exception.EntityNotFoundException;
+import com.siggebig.demo.models.Booking;
+import com.siggebig.demo.service.BookingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("trip/book")
 public class BookingController {
 
-    // make a booking to a trip, includes making payment
+    @Autowired
+    private BookingService bookingService;
 
-    // read info about a users bookings
+    //add booking
+    @PostMapping("/{id}")
+    public ResponseEntity<Booking> createBooking (@PathVariable("id")Long tripId, @RequestHeader("JWTToken")String token) {
 
-    // delete a bookings, removes payment
+        try {
+            Booking booking = bookingService.createBookingWithTokenAndId(tripId,token);
+            return ResponseEntity.ok(booking);
+        } catch (EntityNotFoundException e){
+            return ResponseEntity.badRequest().header("x-info", "Invalid data, trip id or token").build(); //would be nice to have one for each
+        }
+    }
 
-
-
-    // cant really update a booking no? just delete and make new in that case
+    //remove booking
+    @DeleteMapping("/{id}")
+    public ResponseEntity
 
 }

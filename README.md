@@ -4,8 +4,11 @@
 
 Enter git repo URL in Source code management and branch to build, in my case testing.
 build steps:
+
 1 - .mvnw compile
+
 2 - .mvnw package
+
 If build is successful, it means the tests have passed locally.
 
 One requirement was to run the tests in a ubuntu environment, Instead of going with docker (tested that also) I wanted to try to set up a EC2 instance.

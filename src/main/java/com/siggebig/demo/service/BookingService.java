@@ -2,6 +2,7 @@ package com.siggebig.demo.service;
 
 import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
+import com.siggebig.demo.Exception.InvalidPaymentException;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.models.Payment;
 import com.siggebig.demo.models.Trip;
@@ -30,6 +31,9 @@ public class BookingService {
     private TripService tripService;
 
     @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
     private BookingRepository bookingRepository;
 
     @Autowired
@@ -53,18 +57,23 @@ public Booking createBookingWithTokenAndId(Long tripId, String token) {
             .date(Calendar.getInstance().getTime())
             .build();
 
-    Booking booking = Booking.builder()
-            .user(user)
-            .trip(trip)
-            .payment(payment)
-            .build();
-
-    paymentRepository.save(payment);
-    bookingRepository.save(booking);
+    if(paymentService.validatePayment(payment)) {
+        Booking booking = Booking.builder()
+                .user(user)
+                .trip(trip)
+                .payment(payment)
+                .build();
 
 
+        paymentRepository.save(payment);
 
-    return booking;
+
+        bookingRepository.save(booking);
+
+
+
+        return booking;
+    } else throw new InvalidPaymentException("invalid payment");
 }
 
 

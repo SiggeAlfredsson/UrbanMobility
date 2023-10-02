@@ -2,6 +2,7 @@ package com.siggebig.demo.service;
 
 import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
+import com.siggebig.demo.Exception.InvalidPaymentException;
 import com.siggebig.demo.controllers.BookingController;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.models.Payment;
@@ -41,6 +42,9 @@ class BookingServiceTest {
     private TripService tripService;
 
     @Mock
+    private PaymentService paymentService;
+
+    @Mock
     private PaymentRepository paymentRepository;
 
     @Mock
@@ -48,33 +52,58 @@ class BookingServiceTest {
 
     @Test
     public void testCreateBookingWithTokenAndId() {
-        // Arrange
-        Long tripId = 1L;
-        String token = "your_jwt_token_here";
+
+
+
         String username = "testuser";
 
-        // Mocking behavior for jwtService
-        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
 
-        // Mocking behavior for userService
-        User user = new User(); // create a User object for testing
+        when(jwtService.getUsernameFromToken("token")).thenReturn(username);
+
+
+        User user = new User();
         when(userService.findByUsername(username)).thenReturn(user);
 
-        // Mocking behavior for tripService
-        Trip trip = new Trip(); // create a Trip object for testing
-        when(tripService.findById(tripId)).thenReturn(Optional.of(trip));
 
-        // Act
-        Booking booking = bookingService.createBookingWithTokenAndId(tripId, token);
+        Trip trip = new Trip();
+        when(tripService.findById(1L)).thenReturn(Optional.of(trip));
 
-        // Assert
-        // Add your assertions here to verify that the booking is created correctly
+        when(paymentService.validatePayment(any())).thenReturn(true);
+
+
+        Booking booking = bookingService.createBookingWithTokenAndId(1L, "token");
+
+
         assertNotNull(booking);
         assertEquals(user, booking.getUser());
         assertEquals(trip, booking.getTrip());
-        // You can also verify that save methods are called if needed
+
+
         verify(paymentRepository).save(any(Payment.class));
         verify(bookingRepository).save(any(Booking.class));
+    }
+
+    @Test
+    public void testCreateBookingWithTokenAndIdThrowsInvalidPaymentIfInvalidPayment() {
+
+        String username = "testuser";
+
+
+        when(jwtService.getUsernameFromToken("token")).thenReturn(username);
+
+
+        User user = new User();
+        when(userService.findByUsername(username)).thenReturn(user);
+
+
+        Trip trip = new Trip();
+        when(tripService.findById(1L)).thenReturn(Optional.of(trip));
+
+
+        assertThrows(InvalidPaymentException.class, () -> {
+            bookingService.createBookingWithTokenAndId(1L,"token");
+        });
+
     }
 
 

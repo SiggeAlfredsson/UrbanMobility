@@ -3,6 +3,7 @@ package com.siggebig.demo.controllers;
 
 import com.siggebig.demo.Exception.AuthenticationFailedException;
 import com.siggebig.demo.Exception.EntityNotFoundException;
+import com.siggebig.demo.Exception.InvalidPaymentException;
 import com.siggebig.demo.models.Booking;
 import com.siggebig.demo.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class BookingController {
             return ResponseEntity.ok(booking);
         } catch (EntityNotFoundException e){
             return ResponseEntity.badRequest().header("x-info", "Invalid data, trip id or token").build(); //would be nice to have one for each
+        } catch (InvalidPaymentException e) {
+            return ResponseEntity.badRequest().header("x-info", "Invalid payment").build();
         }
     }
 

@@ -7,10 +7,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class PaymentService {
 
-    // need too mock this
-    boolean validatePayment(Payment payment) {
 
-        return true;
+    // need too mock this
+    public boolean validatePayment(Payment payment) {
+
+        return false;
     }
 
 }

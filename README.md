@@ -9,6 +9,8 @@
 
 - Are my EndToEnd tests actully integration tests?
 
+- Would like to split createBookingWithTokenAndId into multiple smaller functions, in bookingService class.
+
 
 --- RUNNING TESTS ---
  
